@@ -168,6 +168,21 @@ export function setOutputDir(dir: string): void {
 }
 
 /**
+ * Issue #8: Get configured proxy URL (e.g. "http://proxy.corp.com:8080")
+ * Returns empty string if no proxy is configured.
+ */
+export function getProxyUrl(): string {
+  return getStore().get('app.proxyUrl', '') as string;
+}
+
+/**
+ * Issue #8: Set proxy URL for network requests
+ */
+export function setProxyUrl(url: string): void {
+  getStore().set('app.proxyUrl', url);
+}
+
+/**
  * Get persisted renderer state by key (for Zustand persist)
  */
 export function getRendererState(key: string): string | null {

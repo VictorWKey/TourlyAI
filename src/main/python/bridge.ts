@@ -8,7 +8,7 @@ import fs from 'fs';
 import { app, BrowserWindow } from 'electron';
 import { EventEmitter } from 'events';
 import { pythonSetup } from '../setup/PythonSetup';
-import { getLLMConfig, getOutputDir, getLanguage } from '../utils/store';
+import { getLLMConfig, getOutputDir, getLanguage, getProxyUrl } from '../utils/store';
 
 /**
  * Command structure sent to Python process
@@ -151,6 +151,16 @@ export class PythonBridge extends EventEmitter {
           console.log('[PythonBridge] Using output directory:', outputDir);
         }
 
+        // Issue #3: Pass userData paths so Python writes models/data outside resources/
+        // These override the defaults in python/config/config.py
+        llmEnv.MODELS_CACHE_DIR = pythonSetup.getModelsCacheDir();
+        if (!outputDir) {
+          // Only set DATA_DIR when no custom output dir — custom OUTPUT_DIR takes precedence
+          llmEnv.DATA_DIR = pythonSetup.getDataDir();
+        }
+        console.log('[PythonBridge] Models cache dir:', llmEnv.MODELS_CACHE_DIR);
+        console.log('[PythonBridge] Data dir:', llmEnv.DATA_DIR || outputDir || '(python default)');
+
         // Pass language to Python for bilingual prompt generation
         const language = getLanguage();
         llmEnv.ANALYSIS_LANGUAGE = language;
@@ -165,9 +175,22 @@ export class PythonBridge extends EventEmitter {
           env: {
             ...process.env,
             ...llmEnv,
+            // Issue #8: Pass configured proxy to Python for HuggingFace downloads, NLTK, etc.
+            ...(() => {
+              const proxy = getProxyUrl();
+              if (!proxy) return {};
+              return {
+                HTTP_PROXY: proxy,
+                HTTPS_PROXY: proxy,
+                http_proxy: proxy,
+                https_proxy: proxy,
+              };
+            })(),
             PYTHONUNBUFFERED: '1',
             PYTHONIOENCODING: 'utf-8',
             HF_HUB_DISABLE_SYMLINKS_WARNING: '1',
+            // Point NLTK to the venv-local data downloaded during setup
+            NLTK_DATA: path.join(pythonSetup.getVenvDir(), 'nltk_data'),
           },
         });
 

@@ -222,7 +222,9 @@ async function autoStartOllama(): Promise<void> {
     } else {
       console.log('[Main] Auto-starting Ollama service...');
       await ollamaInstaller.startService();
-      console.log('[Main] Ollama service started successfully');
+      // Issue #15: Track that we started Ollama so we can stop it on quit
+      pythonSetup.setOllamaStartedByUs(true);
+      console.log('[Main] Ollama service started successfully (will stop on quit)');
     }
 
     // Validate that the configured model actually exists in Ollama.
@@ -312,10 +314,23 @@ app.on('activate', () => {
   }
 });
 
-// Clean up Python bridge before quitting
-app.on('before-quit', () => {
+// Clean up Python bridge and Ollama before quitting
+app.on('before-quit', async () => {
   console.log('[Main] Stopping Python bridge before quit...');
   stopPythonBridge();
+
+  // Issue #15: Stop Ollama service if we started it
+  // Don't stop it if it was already running when we launched — the user may
+  // be using it for other purposes.
+  if (pythonSetup.getOllamaStartedByUs()) {
+    console.log('[Main] Stopping Ollama service (started by us)...');
+    try {
+      await ollamaInstaller.stopService();
+      console.log('[Main] Ollama service stopped');
+    } catch (error) {
+      console.warn('[Main] Failed to stop Ollama:', error);
+    }
+  }
 });
 
 // Export mainWindow for IPC handlers that need to send events

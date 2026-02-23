@@ -18,6 +18,7 @@ import os from 'os';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import type { HardwareDetectionResult, DetectionStatus } from '../../shared/types';
+import { pythonSetup } from './PythonSetup';
 
 const execAsync = promisify(exec);
 
@@ -180,9 +181,8 @@ export class SetupManager {
 
     // 4. Validate HuggingFace models
     const modelKeys: (keyof SetupState['modelsDownloaded'])[] = ['sentiment', 'embeddings', 'subjectivity', 'categories'];
-    const modelDir = app.isPackaged
-      ? path.join(process.resourcesPath, 'python', 'models', 'hf_cache')
-      : path.join(app.getAppPath(), 'python', 'models', 'hf_cache');
+    // Issue #3: Models are now stored in userData (survives auto-updates)
+    const modelDir = pythonSetup.getModelsCacheDir();
 
     for (const key of modelKeys) {
       if (state.modelsDownloaded[key]) {
@@ -298,13 +298,8 @@ export class SetupManager {
     const pythonExe = isWindows ? 'python.exe' : 'python';
     const venvBinDir = isWindows ? 'Scripts' : 'bin';
     
-    let venvPythonPath: string;
-    
-    if (app.isPackaged) {
-      venvPythonPath = path.join(process.resourcesPath, 'python', 'venv', venvBinDir, pythonExe);
-    } else {
-      venvPythonPath = path.join(app.getAppPath(), 'python', 'venv', venvBinDir, pythonExe);
-    }
+    // Issue #3: Venv is now in userData (survives auto-updates)
+    const venvPythonPath = path.join(pythonSetup.getVenvDir(), venvBinDir, pythonExe);
     
     // Check if venv Python exists
     if (!fs.existsSync(venvPythonPath)) {
@@ -331,7 +326,8 @@ export class SetupManager {
     
     // In production, bundled Python is always available
     if (app.isPackaged) {
-      const pythonPath = path.join(process.resourcesPath, 'python', 'venv', venvBinDir, pythonExe);
+      // Issue #3: Venv is in userData now
+      const pythonPath = path.join(pythonSetup.getVenvDir(), venvBinDir, pythonExe);
       const exists = fs.existsSync(pythonPath);
       return { available: exists, version: exists ? 'bundled' : undefined };
     }

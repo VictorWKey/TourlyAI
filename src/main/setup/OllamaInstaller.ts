@@ -11,6 +11,7 @@ import path from 'path';
 import fs from 'fs';
 import https from 'https';
 import { promisify } from 'util';
+import { getProxyUrl } from '../utils/store';
 
 const execAsync = promisify(exec);
 
@@ -279,14 +280,21 @@ export class OllamaInstaller {
       }
 
       const zipPath = path.join(installDir, 'ollama.zip');
-      const downloadUrl = 'https://ollama.com/download/ollama-windows-amd64.zip';
+      // Issue #5: Support ARM64 Windows (e.g. Snapdragon laptops)
+      const arch = process.arch === 'arm64' ? 'arm64' : 'amd64';
+      const downloadUrl = `https://ollama.com/download/ollama-windows-${arch}.zip`;
 
       // Download using PowerShell's Invoke-WebRequest (more reliable than Node https)
       onProgress({ stage: 'downloading', progress: 5, message: 'Downloading Ollama...' });
       
       // Use PowerShell to download - this handles redirects properly
+      // Issue #8: If proxy is configured, pass it to Invoke-WebRequest
+      const proxyUrl = getProxyUrl();
+      const proxyArg = proxyUrl ? ` -Proxy '${proxyUrl.replace(/'/g, "''")}'` : '';
+      // Escape single quotes in paths (e.g., usernames like O'Brien)
+      const escapedZipPath = zipPath.replace(/'/g, "''");
       // Need semicolons to separate statements in single-line PowerShell
-      const downloadCommand = `powershell -Command "$ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest -Uri '${downloadUrl}' -OutFile '${zipPath}'; $ProgressPreference = 'Continue'"`;
+      const downloadCommand = `powershell -Command "$ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest -Uri '${downloadUrl}' -OutFile '${escapedZipPath}'${proxyArg}; $ProgressPreference = 'Continue'"`;
       
       console.log('[OllamaInstaller] Downloading from:', downloadUrl);
       console.log('[OllamaInstaller] Saving to:', zipPath);
@@ -312,7 +320,7 @@ export class OllamaInstaller {
       console.log('[OllamaInstaller] Extracting to:', installDir);
       
       await execAsync(
-        `powershell -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${installDir}' -Force"`,
+        `powershell -Command "Expand-Archive -Path '${zipPath.replace(/'/g, "''")}' -DestinationPath '${installDir.replace(/'/g, "''")}' -Force"`,
         { timeout: 60000 }
       );
 
@@ -333,8 +341,12 @@ export class OllamaInstaller {
         
         const currentPath = userPath.trim();
         if (!currentPath.includes(installDir)) {
+          // Escape single quotes in both currentPath and installDir to prevent
+          // PowerShell injection from PATH entries containing special characters
+          // (e.g., user directories with apostrophes like C:\Users\O'Brien\...)
+          const escapedPath = `${currentPath};${installDir}`.replace(/'/g, "''");
           await execAsync(
-            `powershell -Command "[System.Environment]::SetEnvironmentVariable('Path', '${currentPath};${installDir}', 'User')"`
+            `powershell -Command "[System.Environment]::SetEnvironmentVariable('Path', '${escapedPath}', 'User')"`
           );
           console.log('[OllamaInstaller] Added to PATH:', installDir);
         }
@@ -856,7 +868,7 @@ export class OllamaInstaller {
       );
       
       if (fs.existsSync(installDir)) {
-        await execAsync(`powershell -Command "Remove-Item -Path '${installDir}' -Recurse -Force -ErrorAction SilentlyContinue"`);
+        await execAsync(`powershell -Command "Remove-Item -Path '${installDir.replace(/'/g, "''")}' -Recurse -Force -ErrorAction SilentlyContinue"`);
       }
 
       onProgress?.('Removing Ollama models and configuration...');
@@ -864,7 +876,7 @@ export class OllamaInstaller {
       // Remove models and configuration from user profile
       const ollamaHome = path.join(process.env.USERPROFILE || '', '.ollama');
       if (fs.existsSync(ollamaHome)) {
-        await execAsync(`powershell -Command "Remove-Item -Path '${ollamaHome}' -Recurse -Force -ErrorAction SilentlyContinue"`);
+        await execAsync(`powershell -Command "Remove-Item -Path '${ollamaHome.replace(/'/g, "''")}' -Recurse -Force -ErrorAction SilentlyContinue"`);
       }
 
       onProgress?.('Cleaning environment variables...');
@@ -887,7 +899,7 @@ export class OllamaInstaller {
         
         if (cleanedPath !== currentPath.trim()) {
           await execAsync(
-            `powershell -Command "[System.Environment]::SetEnvironmentVariable('Path', '${cleanedPath}', 'User')"`
+            `powershell -Command "[System.Environment]::SetEnvironmentVariable('Path', '${cleanedPath.replace(/'/g, "''")}', 'User')"`
           );
         }
       } catch (pathError) {

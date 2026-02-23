@@ -100,8 +100,17 @@ class ConfigDataset:
 
     @classmethod
     def get_data_dir(cls) -> Path:
-        """Returns the working/output data directory, respecting OUTPUT_DIR env var if set.
-        All pipeline phases read/write their processed data here."""
+        """Returns the working/output data directory.
+        Priority: DATA_DIR env var > OUTPUT_DIR env var > python/data/ default.
+        The Electron bridge sets DATA_DIR to userData/python-env/data/
+        so that output data survives app auto-updates (Issue #3)."""
+        # DATA_DIR is the direct path (set by bridge.ts for userData persistence)
+        data_dir = os.getenv('DATA_DIR', '')
+        if data_dir:
+            p = Path(data_dir)
+            p.mkdir(parents=True, exist_ok=True)
+            return p
+        # OUTPUT_DIR is the user's custom output directory (adds /data suffix)
         output_dir = os.getenv('OUTPUT_DIR', '')
         if output_dir:
             return Path(output_dir) / 'data'
@@ -124,15 +133,23 @@ class ConfigDataset:
 
     # Keep static references for backward compatibility (default paths)
     _output_dir = os.getenv('OUTPUT_DIR', '')
-    DATA_DIR = Path(_output_dir) / 'data' if _output_dir else PRODUCTION_DIR / 'data'
+    _data_dir_env = os.getenv('DATA_DIR', '')
+    DATA_DIR = (
+        Path(_data_dir_env) if _data_dir_env
+        else Path(_output_dir) / 'data' if _output_dir
+        else PRODUCTION_DIR / 'data'
+    )
 
     # Archivos principales
     DATASET_PATH = DATA_DIR / 'dataset.csv'
     SHARED_DIR = DATA_DIR / 'shared'
 
-    # Local cache directory for HuggingFace models (bundled with the app)
-    # All models are downloaded here instead of the global ~/.cache/huggingface
-    MODELS_CACHE_DIR = MODELS_DIR / 'hf_cache'
+    # Issue #3: Local cache directory for HuggingFace models.
+    # When running inside the Electron app, MODELS_CACHE_DIR env var points
+    # to userData/python-env/models/hf_cache/ so models survive app updates.
+    # Fallback: python/models/hf_cache/ (development or standalone usage).
+    _models_cache_env = os.getenv('MODELS_CACHE_DIR', '')
+    MODELS_CACHE_DIR = Path(_models_cache_env) if _models_cache_env else MODELS_DIR / 'hf_cache'
 
     # HuggingFace model IDs (downloaded from cloud into MODELS_CACHE_DIR)
     SENTIMENT_MODEL_ID = 'nlptown/bert-base-multilingual-uncased-sentiment'

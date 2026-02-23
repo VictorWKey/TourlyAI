@@ -5,6 +5,7 @@
 import { ipcMain, app } from 'electron';
 import path from 'path';
 import { getOutputDir } from '../utils/store';
+import { pythonSetup } from '../setup/PythonSetup';
 import { checkForUpdates, quitAndInstall, getUpdateStatus } from '../utils/autoUpdater';
 
 export function registerAppHandlers(): void {
@@ -28,6 +29,7 @@ export function registerAppHandlers(): void {
   });
 
   // Get Python data directory (where visualizations are saved)
+  // Issue #3: Default output goes to userData/python-env/data/ to survive updates
   ipcMain.handle('app:get-python-data-dir', () => {
     // If a custom output directory is configured, use its data/ subfolder
     const outputDir = getOutputDir();
@@ -35,15 +37,9 @@ export function registerAppHandlers(): void {
       return path.join(outputDir, 'data');
     }
 
-    // In development, Python runs from the project's python/ directory
-    // In production, it runs from the resources/python/ directory
-    const isPackaged = app.isPackaged;
-    
-    if (isPackaged) {
-      return path.join(process.resourcesPath, 'python', 'data');
-    } else {
-      return path.join(app.getAppPath(), 'python', 'data');
-    }
+    // Use the persistent data dir from PythonSetup (userData/python-env/data/)
+    // This ensures output data survives Squirrel auto-updates.
+    return pythonSetup.getDataDir();
   });
 
   // Get system info

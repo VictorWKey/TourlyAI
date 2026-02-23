@@ -159,6 +159,8 @@ export interface AppSettings {
     theme: 'light' | 'dark' | 'system';
     language: string;
     outputDir: string;
+    /** Issue #8: Optional HTTP/HTTPS proxy for corporate/school networks */
+    proxyUrl?: string;
   };
 }
 

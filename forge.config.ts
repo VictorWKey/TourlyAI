@@ -8,12 +8,101 @@ import { PublisherGithub } from '@electron-forge/publisher-github';
 import { VitePlugin } from '@electron-forge/plugin-vite';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
+import fs from 'fs';
+import path from 'path';
+
+/**
+ * Issue #14: Remove dev/test files from the bundled python/ directory
+ * after Electron Packager copies it to resources/. This reduces installer
+ * size and avoids shipping test data, scripts, and documentation.
+ *
+ * IMPORTANT: This uses afterComplete (not afterCopy) because afterCopy runs on
+ * the ASAR app content directory, but python/ is copied to resources/ via
+ * extraResource — which happens AFTER afterCopy. afterComplete runs after the
+ * entire packaging is done, so resources/python/ exists at that point.
+ */
+function cleanPythonResourcesAfterComplete(
+  buildPath: string,
+  _electronVersion: string,
+  _platform: string,
+  _arch: string,
+  callback: (err?: Error) => void
+): void {
+  // buildPath = final output dir (e.g., out/TourlyAI-win32-x64)
+  // extraResource copies python/ to resources/python/
+  const pythonDir = path.join(buildPath, 'resources', 'python');
+  
+  // Directories to remove from the bundled python/ folder
+  const dirsToRemove = [
+    'tests',        // Unit tests
+    'scripts',      // Dev scripts
+    'docs',         // Dev documentation
+    'data/test_datasets', // Test datasets
+    '__pycache__',  // Compiled bytecode
+    '.pytest_cache', // pytest cache
+    'models',       // Models will be downloaded to userData at runtime
+    'venv',         // Should never be here, but just in case
+  ];
+
+  // File patterns to remove
+  const filePatternsToRemove = [
+    'requirements-dev.txt',
+    'test_bridge.py',
+    '.coverage',
+    '.mypy_cache',
+    'README.md',
+  ];
+
+  try {
+    for (const dir of dirsToRemove) {
+      const dirPath = path.join(pythonDir, dir);
+      if (fs.existsSync(dirPath)) {
+        fs.rmSync(dirPath, { recursive: true, force: true });
+        console.log(`[forge] Removed dev directory: python/${dir}`);
+      }
+    }
+
+    for (const file of filePatternsToRemove) {
+      const filePath = path.join(pythonDir, file);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+        console.log(`[forge] Removed dev file: python/${file}`);
+      }
+    }
+
+    // Recursively remove __pycache__ directories
+    const removePycache = (dir: string) => {
+      if (!fs.existsSync(dir)) return;
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          if (entry.name === '__pycache__' || entry.name === '.pytest_cache') {
+            fs.rmSync(fullPath, { recursive: true, force: true });
+          } else {
+            removePycache(fullPath);
+          }
+        }
+      }
+    };
+    removePycache(pythonDir);
+
+    console.log('[forge] Python resources cleaned for production');
+    callback();
+  } catch (error) {
+    console.warn('[forge] Warning: Failed to clean some python resources:', error);
+    callback(); // Don't fail the build for cleanup issues
+  }
+}
 
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
     // Include Python directory in the package
     extraResource: ['./python'],
+    // Issue #14: Remove dev/test files from python/ after packaging completes.
+    // Uses afterComplete instead of afterCopy because extraResource copies
+    // python/ to resources/ AFTER afterCopy runs — afterCopy would never find it.
+    afterComplete: [cleanPythonResourcesAfterComplete],
     // Only bundle the compiled Vite output (.vite/) — mirrors what the Vite plugin
     // sets automatically. Everything else (src/, python/, scripts/, node_modules/,
     // etc.) is excluded from the ASAR to keep the installer lean.
@@ -45,6 +134,27 @@ const config: ForgeConfig = {
       ProductName: 'TourlyAI',
       FileDescription: 'AI-powered review analysis tool',
     },
+    // ──────────────────────────────────────────────────────────────
+    // Issue #1: Code Signing (CRITICAL for avoiding SmartScreen)
+    // ──────────────────────────────────────────────────────────────
+    // Without code signing, ~80% of users will see a SmartScreen warning
+    // ("Windows protected your PC") that blocks installation.
+    //
+    // Windows: Set these environment variables before building:
+    //   WINDOWS_CERTIFICATE_FILE=path/to/certificate.pfx
+    //   WINDOWS_CERTIFICATE_PASSWORD=your-password
+    //
+    // To obtain a code signing certificate:
+    //   Option 1: Purchase from a CA (DigiCert, Sectigo, etc.) — instant trust
+    //   Option 2: Use Azure Trusted Signing (free tier available)
+    //   Option 3: Self-signed (for testing only, won't reduce SmartScreen warnings)
+    //
+    // Test self-signed cert (PowerShell, for dev testing only):
+    //   $cert = New-SelfSignedCertificate -Subject "CN=TourlyAI" -Type CodeSigningCert -CertStoreLocation Cert:\CurrentUser\My
+    //   Export-PfxCertificate -Cert $cert -FilePath tourlyai-dev.pfx -Password (ConvertTo-SecureString -String "test" -Force -AsPlainText)
+    //   $env:WINDOWS_CERTIFICATE_FILE = "tourlyai-dev.pfx"
+    //   $env:WINDOWS_CERTIFICATE_PASSWORD = "test"
+    // ──────────────────────────────────────────────────────────────
   },
   rebuildConfig: {},
   makers: [
