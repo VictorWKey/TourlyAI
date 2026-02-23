@@ -6,8 +6,8 @@
  * Windows (Squirrel):
  *   When the user uninstalls via "Add/Remove Programs", Squirrel 
  *   launches the app with --squirrel-uninstall. This handler:
- *   1. Shows a dialog asking what external resources to remove
- *   2. Cleans up selected resources (Ollama, models, app data, env vars)
+ *   1. Detects all external resources created by this app
+ *   2. Removes everything automatically (Ollama, models, app data, env vars)
  *   3. Then lets Squirrel finish removing the app files
  * 
  * macOS / Linux:
@@ -20,7 +20,7 @@
  *   Linux:   ~/.config/tourlyai-desktop, /usr/local/bin/ollama, ~/.ollama
  */
 
-import { app, dialog } from 'electron';
+import { app } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import { exec } from 'child_process';
@@ -28,7 +28,7 @@ import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
-/** What the user chose to remove during uninstall */
+/** Resources to remove during uninstall (all detected items are always included) */
 export interface UninstallChoices {
   removeOllama: boolean;
   removeAppData: boolean;
@@ -83,113 +83,16 @@ function detectInstalledResources(): { ollamaInstalled: boolean; appDataExists: 
 }
 
 /**
- * Show native dialog asking which external resources to remove.
- * Returns the user's choices. If nothing external exists, skips the dialog.
+ * Build removal choices based on what is actually installed.
+ * Always removes everything that is detected — no prompts.
  */
-async function promptUninstallChoices(): Promise<UninstallChoices> {
+function buildUninstallChoices(): UninstallChoices {
   const resources = detectInstalledResources();
-  const paths = getExternalPaths();
-
-  // Nothing external to clean → skip dialog
-  if (!resources.ollamaInstalled && !resources.appDataExists && !resources.ollamaModelsExist) {
-    return { removeOllama: false, removeAppData: false, removeOllamaModels: false };
-  }
-
-  // Build the message describing what we found
-  const detectedItems: string[] = [];
-  if (resources.appDataExists) {
-    detectedItems.push(`• App settings & data\n   ${paths.appData}`);
-  }
-  if (resources.ollamaInstalled) {
-    detectedItems.push(`• Ollama (Local LLM engine)\n   ${paths.ollamaInstall}`);
-  }
-  if (resources.ollamaModelsExist) {
-    detectedItems.push(`• Ollama downloaded models\n   ${paths.ollamaModels}`);
-  }
-
-  const message = [
-    'TourlyAI found external data that was created during use.\n',
-    'The following items were detected:\n',
-    detectedItems.join('\n\n'),
-    '\n\nWould you like to remove ALL of these, or choose individually?',
-  ].join('\n');
-
-  // First dialog: Remove all, Choose, or Keep all
-  const mainResult = await dialog.showMessageBox({
-    type: 'question',
-    title: 'Uninstall — Clean Up External Data',
-    message: 'Clean up external data?',
-    detail: message,
-    buttons: ['Remove All', 'Let Me Choose...', 'Keep Everything'],
-    defaultId: 2,
-    cancelId: 2,
-    noLink: true,
-  });
-
-  // "Keep Everything"
-  if (mainResult.response === 2) {
-    return { removeOllama: false, removeAppData: false, removeOllamaModels: false };
-  }
-
-  // "Remove All"
-  if (mainResult.response === 0) {
-    return {
-      removeOllama: resources.ollamaInstalled,
-      removeAppData: resources.appDataExists,
-      removeOllamaModels: resources.ollamaModelsExist,
-    };
-  }
-
-  // "Let Me Choose..." — show individual checkboxes via sequential dialogs
-  const choices: UninstallChoices = {
-    removeOllama: false,
-    removeAppData: false,
-    removeOllamaModels: false,
+  return {
+    removeOllama: resources.ollamaInstalled,
+    removeAppData: resources.appDataExists,
+    removeOllamaModels: resources.ollamaModelsExist,
   };
-
-  if (resources.appDataExists) {
-    const r = await dialog.showMessageBox({
-      type: 'question',
-      title: 'Uninstall — App Settings',
-      message: 'Remove app settings and saved data?',
-      detail: `This includes your LLM configuration, pipeline state, recent files, and dashboard layouts.\n\nLocation: ${paths.appData}`,
-      buttons: ['Remove', 'Keep'],
-      defaultId: 1,
-      cancelId: 1,
-      noLink: true,
-    });
-    choices.removeAppData = r.response === 0;
-  }
-
-  if (resources.ollamaInstalled) {
-    const r = await dialog.showMessageBox({
-      type: 'question',
-      title: 'Uninstall — Ollama',
-      message: 'Remove Ollama (Local LLM engine)?',
-      detail: `Ollama was installed by this app for local AI processing. If you use Ollama with other applications, you should keep it.\n\nLocation: ${paths.ollamaInstall}`,
-      buttons: ['Remove', 'Keep'],
-      defaultId: 1,
-      cancelId: 1,
-      noLink: true,
-    });
-    choices.removeOllama = r.response === 0;
-  }
-
-  if (resources.ollamaModelsExist) {
-    const r = await dialog.showMessageBox({
-      type: 'question',
-      title: 'Uninstall — Ollama Models',
-      message: 'Remove downloaded Ollama models?',
-      detail: `These are the AI models downloaded by Ollama (can be several GB). If you keep Ollama, you may want to keep these.\n\nLocation: ${paths.ollamaModels}`,
-      buttons: ['Remove', 'Keep'],
-      defaultId: 1,
-      cancelId: 1,
-      noLink: true,
-    });
-    choices.removeOllamaModels = r.response === 0;
-  }
-
-  return choices;
 }
 
 /**
@@ -361,7 +264,7 @@ export async function handleSquirrelEvents(): Promise<boolean> {
 
       await removeShortcuts();
 
-      const choices = await promptUninstallChoices();
+      const choices = buildUninstallChoices();
       await executeCleanup(choices);
     } catch (error) {
       console.error('[Uninstall] Cleanup error:', error);
@@ -385,9 +288,9 @@ export async function cleanupExternalResources(): Promise<UninstallChoices | nul
     await app.whenReady();
   }
 
-  const choices = await promptUninstallChoices();
+  const choices = buildUninstallChoices();
 
-  // If the user chose to keep everything, return null
+  // Nothing detected — nothing to remove
   if (!choices.removeOllama && !choices.removeAppData && !choices.removeOllamaModels) {
     return null;
   }
