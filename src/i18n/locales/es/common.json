@@ -80,10 +80,10 @@
     "9": { "name": "Visualizaciones y Métricas", "description": "Generación de visualizaciones y exportación de métricas analíticas" }
   },
   "llmMode": {
-    "label": "Modo de IA",
+    "label": "Modo LLM",
     "local": "Local (en este equipo)",
     "api": "Nube (OpenAI)",
-    "none": "Sin IA",
+    "none": "Sin LLM",
     "noModel": "Sin configurar",
     "limitedFunctionality": "Funcionalidad limitada",
     "apiKeyConfigured": "API Key Configurada",

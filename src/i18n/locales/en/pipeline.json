@@ -12,7 +12,7 @@
     "runAll": "Run All"
   },
   "warnings": {
-    "noLlmTitle": "AI-free mode active",
+    "noLlmTitle": "LLM-free mode active",
     "noLlmDesc": "Phases 6, 7, and 8 are disabled. Some Phase 9 visualizations won't be generated. You can change the mode in Settings.",
     "ollamaOfflineTitle": "Local AI engine is not running",
     "ollamaOfflineDesc": "Phases 6, 7, and 8 require the local AI engine to work. Start it or switch to Cloud / AI-free mode in Settings.",
@@ -37,7 +37,7 @@
   "phaseWarnings": {
     "phase6Slow": "This phase may take a long time due to the complexity of analyzing themes across all reviews with AI.",
     "phase7Slow": "This phase may take a long time due to the complexity of summarizing multiple reviews with AI.",
-    "noLlmPhase9": "No AI available: topic and summary visualizations will not be generated."
+    "noLlmPhase9": "No LLM: topic and summary visualizations will not be generated."
   },
   "disabledReason": {
     "noLlm": "Requires an AI engine. Configure one in Settings.",

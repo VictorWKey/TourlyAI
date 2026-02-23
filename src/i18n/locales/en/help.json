@@ -38,11 +38,11 @@
     },
     "what-are-phases": {
       "question": "What are the analysis 'phases' and what does each one do?",
-      "answer": "The analysis is organized in 9 sequential steps (phases):\n\n1. **Basic Processing** — Cleans and prepares your text data\n2. **Basic Statistics** — Generates descriptive statistics\n3. **Sentiment Analysis** — Detects if each review is positive, negative, or neutral\n4. **Subjectivity Analysis** — Identifies if reviews are opinion-based or factual\n5. **Category Classification** — Groups reviews by tourism category (food, lodging, etc.)\n6. **Topic Analysis** — Discovers the main themes customers talk about using AI\n7. **Intelligent Summary** — Creates structured summaries using AI\n8. **Strategic Insights** — Generates actionable recommendations using AI\n9. **Visualizations & Metrics** — Produces charts and exports analytical data\n\nPhases 1-5 run without AI. Phases 6-8 require an AI model to be configured."
+      "answer": "The analysis is organized in 9 sequential steps (phases):\n\n1. **Basic Processing** — Cleans and prepares your text data\n2. **Basic Statistics** — Generates descriptive statistics\n3. **Sentiment Analysis** — Detects if each review is positive, negative, or neutral (uses classical NLP/AI)\n4. **Subjectivity Analysis** — Identifies if reviews are opinion-based or factual (uses classical NLP/AI)\n5. **Category Classification** — Groups reviews by tourism category (uses classical NLP/AI)\n6. **Topic Analysis** — Discovers the main themes customers talk about (requires LLM)\n7. **Intelligent Summary** — Creates structured summaries (requires LLM)\n8. **Strategic Insights** — Generates actionable recommendations (requires LLM)\n9. **Visualizations & Metrics** — Produces charts and exports analytical data\n\nPhases 1-5 do not require an LLM (though phases 3-5 use classical AI models). Phases 6-8 require a configured LLM (Ollama or OpenAI)."
     },
     "how-long-analysis": {
       "question": "How long does the analysis take?",
-      "answer": "It depends on the number of reviews and your computer's capabilities. For a dataset of ~300 reviews:\n- Phases 1-5 (no AI): approximately 2-5 minutes\n- Phases 6-8 (with AI): approximately 5-15 minutes\n- Phase 9 (visualizations): approximately 1-2 minutes\n\nThe first run may take longer because the app downloads and loads the AI models. Subsequent runs are faster."
+      "answer": "It depends on the number of reviews and your computer's capabilities. For a dataset of ~300 reviews:\n- Phases 1-5 (no LLM): approximately 2-5 minutes\n- Phases 6-8 (with LLM): approximately 5-15 minutes\n- Phase 9 (visualizations): approximately 1-2 minutes\n\nThe first run may take longer because the app downloads and loads the models. Subsequent runs are faster."
     },
     "what-is-ollama": {
       "question": "What is Ollama and why does the app mention it?",
@@ -50,7 +50,7 @@
     },
     "local-vs-cloud": {
       "question": "What is the difference between 'Local AI' and 'Cloud AI'?",
-      "answer": "**Local AI (Ollama):** The AI runs on your computer. It's free, private, and works offline. However, it requires a reasonably powerful computer (8+ GB RAM recommended) and results may be slightly less refined.\n\n**Cloud AI (OpenAI):** The AI runs on OpenAI's servers. It produces higher-quality results and works on any computer, but requires an internet connection and an OpenAI API key (paid service). Review text is sent to OpenAI for processing.\n\n**No AI:** You can run phases 1-5 without any AI. Topics, summaries, and insights won't be available."
+      "answer": "**Local AI (Ollama):** An LLM runs on your computer. It's free, private, and works offline. Requires a reasonably powerful computer (8+ GB RAM recommended).\n\n**Cloud AI (OpenAI):** An LLM runs on OpenAI's servers. Produces higher-quality results and works on any computer, but requires an internet connection and an OpenAI API key (paid service). Review text is sent to OpenAI for processing.\n\n**Without LLM:** Runs phases 1-5 without a large language model (LLM). Phases 3, 4, and 5 still use classical machine-learning AI (NLP models) for sentiment, subjectivity, and category classification. Phases 6-8 (topics, summaries, and insights) will not be available as they require an LLM."
     },
     "what-is-api-key": {
       "question": "What is an API key and how do I get one?",
@@ -86,7 +86,7 @@
     },
     "ollama-not-running": {
       "question": "The app says 'AI engine is not available'. What do I do?",
-      "answer": "This means Ollama (the local AI) isn't running. Try these steps:\n1. Check the sidebar — if the AI indicator is red, Ollama is offline\n2. Go to Settings > Ollama Management and click 'Start Ollama'\n3. If that doesn't work, restart your computer and open TourlyAI again\n4. You can also switch to 'Cloud AI' mode in Settings if you have an OpenAI API key\n5. Or select 'Without AI' to run only phases 1-5"
+      "answer": "This means Ollama (the local AI) isn't running. Try these steps:\n1. Check the sidebar — if the AI indicator is red, Ollama is offline\n2. Go to Settings > Ollama Management and click 'Start Ollama'\n3. If that doesn't work, restart your computer and open TourlyAI again\n4. You can also switch to 'Cloud AI' mode in Settings if you have an OpenAI API key\n5. Or select 'Without LLM' to run phases 1-5 (phases 3-5 will still use classical AI)"
     },
     "change-language": {
       "question": "Can I change the app language?",

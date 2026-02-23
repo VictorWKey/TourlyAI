@@ -38,11 +38,11 @@
     },
     "what-are-phases": {
       "question": "¿Qué son las 'fases' del análisis y qué hace cada una?",
-      "answer": "El análisis está organizado en 9 pasos secuenciales (fases):\n\n1. **Procesamiento Básico** — Limpia y prepara tus datos de texto\n2. **Estadísticas Básicas** — Genera estadísticas descriptivas\n3. **Análisis de Sentimientos** — Detecta si cada reseña es positiva, negativa o neutra\n4. **Análisis de Subjetividad** — Identifica si las reseñas son opiniones o hechos\n5. **Clasificación de Categorías** — Agrupa las reseñas por categoría turística (comida, alojamiento, etc.)\n6. **Análisis de Temas** — Descubre los temas principales de los que hablan los clientes usando IA\n7. **Resumen Inteligente** — Crea resúmenes estructurados usando IA\n8. **Insights Estratégicos** — Genera recomendaciones accionables usando IA\n9. **Visualizaciones y Métricas** — Produce gráficos y exporta datos analíticos\n\nLas fases 1-5 funcionan sin IA. Las fases 6-8 requieren un modelo de IA configurado."
+      "answer": "El análisis está organizado en 9 pasos secuenciales (fases):\n\n1. **Procesamiento Básico** — Limpia y prepara tus datos de texto\n2. **Estadísticas Básicas** — Genera estadísticas descriptivas\n3. **Análisis de Sentimientos** — Detecta si cada reseña es positiva, negativa o neutra (usa IA clásica de NLP)\n4. **Análisis de Subjetividad** — Identifica si las reseñas son opiniones o hechos (usa IA clásica de NLP)\n5. **Clasificación de Categorías** — Agrupa las reseñas por categoría turística (usa IA clásica de NLP)\n6. **Análisis de Temas** — Descubre los temas principales de los que hablan los clientes (requiere LLM)\n7. **Resumen Inteligente** — Crea resúmenes estructurados (requiere LLM)\n8. **Insights Estratégicos** — Genera recomendaciones accionables (requiere LLM)\n9. **Visualizaciones y Métricas** — Produce gráficos y exporta datos analíticos\n\nLas fases 1-5 no requieren LLM (aunque las fases 3-5 usan modelos de IA clásica). Las fases 6-8 requieren un LLM configurado (Ollama o OpenAI)."
     },
     "how-long-analysis": {
       "question": "¿Cuánto tarda el análisis?",
-      "answer": "Depende del número de reseñas y las capacidades de tu computadora. Para un dataset de ~300 reseñas:\n- Fases 1-5 (sin IA): aproximadamente 2-5 minutos\n- Fases 6-8 (con IA): aproximadamente 5-15 minutos\n- Fase 9 (visualizaciones): aproximadamente 1-2 minutos\n\nLa primera ejecución puede tardar más porque la app descarga y carga los modelos de IA. Las ejecuciones posteriores son más rápidas."
+      "answer": "Depende del número de reseñas y las capacidades de tu computadora. Para un dataset de ~300 reseñas:\n- Fases 1-5 (sin LLM): aproximadamente 2-5 minutos\n- Fases 6-8 (con LLM): aproximadamente 5-15 minutos\n- Fase 9 (visualizaciones): aproximadamente 1-2 minutos\n\nLa primera ejecución puede tardar más porque la app descarga y carga los modelos. Las ejecuciones posteriores son más rápidas."
     },
     "what-is-ollama": {
       "question": "¿Qué es Ollama y por qué la app lo menciona?",
@@ -50,7 +50,7 @@
     },
     "local-vs-cloud": {
       "question": "¿Cuál es la diferencia entre 'IA Local' e 'IA en la Nube'?",
-      "answer": "**IA Local (Ollama):** La IA se ejecuta en tu computadora. Es gratuita, privada y funciona sin internet. Sin embargo, requiere una computadora razonablemente potente (8+ GB RAM recomendado) y los resultados pueden ser ligeramente menos refinados.\n\n**IA en la Nube (OpenAI):** La IA se ejecuta en los servidores de OpenAI. Produce resultados de mayor calidad y funciona en cualquier computadora, pero requiere conexión a internet y una clave API de OpenAI (servicio de pago). El texto de las reseñas se envía a OpenAI para su procesamiento.\n\n**Sin IA:** Puedes ejecutar las fases 1-5 sin ninguna IA. Los temas, resúmenes e insights no estarán disponibles."
+      "answer": "**IA Local (Ollama):** Un LLM se ejecuta en tu computadora. Es gratuito, privado y funciona sin internet. Requiere una computadora razonablemente potente (8+ GB RAM recomendado).\n\n**IA en la Nube (OpenAI):** Un LLM se ejecuta en los servidores de OpenAI. Produce resultados de mayor calidad y funciona en cualquier computadora, pero requiere conexión a internet y una clave API de OpenAI (servicio de pago). El texto de las reseñas se envía a OpenAI para su procesamiento.\n\n**Sin LLM:** Ejecuta las fases 1-5 sin un modelo de lenguaje grande (LLM). Las fases 3, 4 y 5 siguen usando IA clásica de aprendizaje automático (NLP) para sentimientos, subjetividad y categorías. Las fases 6-8 (temas, resúmenes e insights) no estarán disponibles porque estas sí requieren un LLM."
     },
     "what-is-api-key": {
       "question": "¿Qué es una clave API y cómo consigo una?",
@@ -86,7 +86,7 @@
     },
     "ollama-not-running": {
       "question": "La app dice 'Motor de IA no disponible'. ¿Qué hago?",
-      "answer": "Esto significa que Ollama (la IA local) no está ejecutándose. Prueba estos pasos:\n1. Revisa la barra lateral — si el indicador de IA está rojo, Ollama está fuera de línea\n2. Ve a Configuración > Gestión de Ollama y haz clic en 'Iniciar Ollama'\n3. Si eso no funciona, reinicia tu computadora y abre TourlyAI de nuevo\n4. También puedes cambiar al modo 'IA en la Nube' en Configuración si tienes una clave API de OpenAI\n5. O selecciona 'Sin IA' para ejecutar solo las fases 1-5"
+      "answer": "Esto significa que Ollama (la IA local) no está ejecutándose. Prueba estos pasos:\n1. Revisa la barra lateral — si el indicador de IA está rojo, Ollama está fuera de línea\n2. Ve a Configuración > Gestión de Ollama y haz clic en 'Iniciar Ollama'\n3. Si eso no funciona, reinicia tu computadora y abre TourlyAI de nuevo\n4. También puedes cambiar al modo 'IA en la Nube' en Configuración si tienes una clave API de OpenAI\n5. O selecciona 'Sin LLM' para ejecutar las fases 1-5 (las fases 3-5 seguirán usando IA clásica)"
     },
     "change-language": {
       "question": "¿Puedo cambiar el idioma de la app?",

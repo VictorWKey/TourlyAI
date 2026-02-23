@@ -1,8 +1,8 @@
 {
   "sidebar": {
-    "llmMode": "Modo de IA",
+    "llmMode": "Modo LLM",
     "ollamaNoModel": "IA Local: Sin configurar",
-    "noLlm": "Sin IA",
+    "noLlm": "Sin LLM",
     "ollamaStatus": "Estado de IA Local",
     "checking": "Verificando...",
     "ollamaOffline": "IA Local Desconectada",

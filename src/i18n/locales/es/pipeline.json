@@ -12,7 +12,7 @@
     "runAll": "Ejecutar Todo"
   },
   "warnings": {
-    "noLlmTitle": "Modo sin IA activo",
+    "noLlmTitle": "Modo sin LLM activo",
     "noLlmDesc": "Las fases 6, 7 y 8 están deshabilitadas. Algunas visualizaciones de la fase 9 no se generarán. Puedes cambiar el modo en Configuración.",
     "ollamaOfflineTitle": "El motor de IA local no está en ejecución",
     "ollamaOfflineDesc": "Las fases 6, 7 y 8 requieren el motor de IA local para funcionar. Inicia el motor o cambia a modo Nube / Sin IA en Configuración.",
@@ -37,7 +37,7 @@
   "phaseWarnings": {
     "phase6Slow": "Esta fase puede tardar bastante tiempo debido a la complejidad de analizar los temas de todas las reseñas con IA.",
     "phase7Slow": "Esta fase puede tardar bastante tiempo debido a la complejidad de resumir múltiples reseñas con IA.",
-    "noLlmPhase9": "Sin IA disponible: las visualizaciones de temas y resúmenes no se generarán."
+    "noLlmPhase9": "Sin LLM: las visualizaciones de temas y resúmenes no se generarán."
   },
   "disabledReason": {
     "noLlm": "Requiere un motor de IA. Configura uno en Configuración.",
