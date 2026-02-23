@@ -49,11 +49,8 @@ export interface OpenAIModelOption {
 export const STEP_ORDER: SetupStep[] = [
   'welcome',
   'python-setup',
-  'hardware-select',
   'llm-choice',
-  'model-select',
   'llm-setup',
-  'models',
   'output-dir',
   'complete',
 ];
@@ -102,13 +99,13 @@ export const OPENAI_MODELS: OpenAIModelOption[] = [
     id: 'gpt-5-mini',
     name: 'GPT-5 Mini',
     costTier: 'low',
-    recommended: true,
+    recommended: false,
   },
   {
     id: 'gpt-5-nano',
     name: 'GPT-5 Nano',
     costTier: 'low',
-    recommended: false,
+    recommended: true,
   },
   {
     id: 'gpt-5',
@@ -122,6 +119,30 @@ export const OPENAI_MODELS: OpenAIModelOption[] = [
 
 /** Sanitize a model ID into a valid i18n key (e.g. 'llama3.1:8b' → 'llama3_1_8b') */
 export const modelKey = (id: string) => id.replace(/[.:_-]/g, '_');
+
+/**
+ * Pick the most capable Ollama model the hardware can run.
+ * Priority: largest model whose VRAM (with GPU) or RAM (CPU-only) requirement is met.
+ */
+export function getRecommendedOllamaModel(hw: HardwareConfig): string {
+  const vram = hw.vram ?? 0;
+  const ram = hw.ram ?? 8;
+  const hasGPU = hw.gpu === 'dedicated';
+
+  if (hasGPU) {
+    // VRAM is the binding constraint for GPU inference
+    if (vram >= 12) return 'deepseek-r1:14b';
+    if (vram >= 10) return 'deepseek-r1:8b';
+    if (vram >= 8)  return 'llama3.1:8b';
+    if (vram >= 6)  return 'mistral:7b';
+  }
+
+  // CPU / integrated GPU — system RAM is the binding constraint
+  if (ram >= 32) return 'deepseek-r1:14b';
+  if (ram >= 24) return 'deepseek-r1:8b';
+  if (ram >= 16) return 'llama3.1:8b';
+  return 'mistral:7b';
+}
 
 export function getStepIndex(step: SetupStep): number {
   return STEP_ORDER.indexOf(step);

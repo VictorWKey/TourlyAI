@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { Cloud, Loader2, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Cloud, Loader2, ArrowLeft, ArrowRight, Settings } from 'lucide-react';
 import { Button } from '../../ui/button';
 import { Input } from '../../ui/input';
 
@@ -39,6 +39,10 @@ export function OpenAISetupStep({
         <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 max-w-md mx-auto px-4">
           {t('ollamaSetup.selectedModel')} <span className="font-medium text-slate-700 dark:text-slate-300">{modelName}</span>
         </p>
+        <div className="flex items-center justify-center gap-1.5 mt-2 text-xs text-slate-400 dark:text-slate-500">
+          <Settings className="w-3 h-3" />
+          <span>{t('ollamaSetup.changeModelLater')}</span>
+        </div>
       </div>
 
       <div className="space-y-4 max-w-md mx-auto">

@@ -14,21 +14,17 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { OllamaDownloadProgress, ModelDownloadProgress } from '../../../shared/types';
+import type { OllamaDownloadProgress } from '../../../shared/types';
 
-import { STEP_ORDER, getStepIndex } from './types';
+import { STEP_ORDER, getStepIndex, getRecommendedOllamaModel } from './types';
 import type { SetupStep, HardwareConfig, SetupWizardProps } from './types';
 import {
   StepIndicator,
   WelcomeStep,
   PythonSetupStep,
-  HardwareSelectStep,
   LLMChoiceStep,
-  OllamaModelSelectStep,
-  OpenAIModelSelectStep,
   OllamaSetupStep,
   OpenAISetupStep,
-  ModelDownloadStep,
   OutputDirStep,
   CompleteStep,
 } from './steps';
@@ -38,11 +34,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
   const [currentStep, setCurrentStep] = useState<SetupStep>('welcome');
   const [llmChoice, setLlmChoice] = useState<'ollama' | 'openai' | null>(null);
   const [selectedOllamaModel, setSelectedOllamaModel] = useState<string>('llama3.1:8b');
-  const [customOllamaModel, setCustomOllamaModel] = useState<string>('');
-  const [useCustomOllamaModel, setUseCustomOllamaModel] = useState(false);
-  const [selectedOpenAIModel, setSelectedOpenAIModel] = useState<string>('gpt-5-mini');
-  const [customOpenAIModel, setCustomOpenAIModel] = useState<string>('');
-  const [useCustomOpenAIModel, setUseCustomOpenAIModel] = useState(false);
+  const [selectedOpenAIModel, setSelectedOpenAIModel] = useState<string>('gpt-5-nano');
   const [hardwareConfig, setHardwareConfig] = useState<HardwareConfig>({
     cpu: 'mid',
     ram: 8,
@@ -53,7 +45,6 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
     progress: 0,
     message: '',
   });
-  const [modelProgress, setModelProgress] = useState<Record<string, number>>({});
   const [openaiKey, setOpenaiKey] = useState('');
   const [keyError, setKeyError] = useState('');
   const [isValidating, setIsValidating] = useState(false);
@@ -67,6 +58,16 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
       const parentDir = dir.replace(/[\\/]data$/, '');
       setDefaultOutputDir(parentDir);
     }).catch(() => { /* ignore */ });
+
+    // Silent background hardware detection for LLM recommendations
+    window.electronAPI.setup.detectHardware().then((result: { cpu: { tier: 'low' | 'mid' | 'high' }; ram: { totalGB: number }; gpu: { type: 'none' | 'integrated' | 'dedicated'; vramGB?: number } }) => {
+      setHardwareConfig({
+        cpu: result.cpu.tier,
+        ram: result.ram.totalGB,
+        gpu: result.gpu.type,
+        vram: result.gpu.vramGB || 0,
+      });
+    }).catch(() => { /* use defaults */ });
   }, []);
 
   // Listen for progress updates
@@ -74,20 +75,14 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
     const handleOllamaProgress = (_: unknown, data: OllamaDownloadProgress) => {
       setOllamaProgress(data);
       if (data.stage === 'complete') {
-        setTimeout(() => setCurrentStep('models'), 1000);
+        setTimeout(() => setCurrentStep('output-dir'), 1000);
       }
     };
 
-    const handleModelProgress = (_: unknown, data: ModelDownloadProgress) => {
-      setModelProgress((prev) => ({ ...prev, [data.model]: data.progress }));
-    };
-
     window.electronAPI.setup.onOllamaProgress(handleOllamaProgress);
-    window.electronAPI.setup.onModelProgress(handleModelProgress);
 
     return () => {
       window.electronAPI.setup.offOllamaProgress();
-      window.electronAPI.setup.offModelProgress();
     };
   }, []);
 
@@ -99,43 +94,23 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
     }
   }, [currentStep]);
 
-  const handleHardwareSelect = useCallback((config: HardwareConfig) => {
-    setHardwareConfig(config);
-    
-    // Pre-select the recommended Ollama model based on detected hardware
-    const totalRam = config.ram;
-    const hasGPU = config.gpu === 'dedicated';
-    const vram = config.vram || 0;
-    
-    if (totalRam >= 32 || (hasGPU && vram >= 12)) {
-      setSelectedOllamaModel('deepseek-r1:14b');
-    } else if (totalRam >= 24 || (hasGPU && vram >= 10)) {
-      setSelectedOllamaModel('deepseek-r1:8b');
-    } else if (totalRam >= 16 || (hasGPU && vram >= 8)) {
-      setSelectedOllamaModel('llama3.1:8b');
-    } else if (totalRam >= 12 || (hasGPU && vram >= 6)) {
-      setSelectedOllamaModel('mistral:7b');
-    } else {
-      setSelectedOllamaModel('mistral:7b');
-    }
-    
-    setCurrentStep('llm-choice');
-  }, []);
-
   const handleLLMChoice = useCallback(async (choice: 'ollama' | 'openai') => {
     setLlmChoice(choice);
     await window.electronAPI.setup.setLLMProvider(choice);
-    setCurrentStep('model-select');
-  }, []);
-
-  const handleModelSelect = useCallback(() => {
+    // Auto-select the best model for the detected hardware (user can change in Settings later)
+    if (choice === 'ollama') {
+      setSelectedOllamaModel(getRecommendedOllamaModel(hardwareConfig));
+    } else {
+      setSelectedOpenAIModel('gpt-5-nano');
+    }
+    // Skip model selection — go directly to setup
     setCurrentStep('llm-setup');
   }, []);
 
   // Unified Ollama installation: software + model in one seamless process
   // Installation is NOT complete until a model is successfully installed
   const handleOllamaSetup = useCallback(async () => {
-    const modelToUse = useCustomOllamaModel ? customOllamaModel : selectedOllamaModel;
+    const modelToUse = selectedOllamaModel;
     
     // Check if already fully ready (installed + running + has this model)
     const readyStatus = await window.electronAPI.setup.checkOllamaFullyReady();
@@ -156,7 +131,9 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
           unifiedProgress: 100,
           currentPhase: 'model'
         });
-        setTimeout(() => setCurrentStep('models'), 500);
+        // Silently copy bundled models to userData
+        window.electronAPI.setup.checkModels().catch(() => {});
+        setTimeout(() => setCurrentStep('output-dir'), 500);
         return;
       }
       // Model not found, just pull it (already installed)
@@ -197,7 +174,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
     // Always ensure the selected model is saved to config after successful setup
     await window.electronAPI.settings.set('llm.localModel', modelToUse);
     await window.electronAPI.settings.set('llm.mode', 'local');
-  }, [selectedOllamaModel, customOllamaModel, useCustomOllamaModel]);
+  }, [selectedOllamaModel]);
 
   const handleOpenAISetup = useCallback(async () => {
     setIsValidating(true);
@@ -207,13 +184,13 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
       const result = await window.electronAPI.setup.validateOpenAIKey(openaiKey);
       
       if (result.valid) {
-        const modelToUse = useCustomOpenAIModel ? customOpenAIModel : selectedOpenAIModel;
+        const modelToUse = selectedOpenAIModel;
         await window.electronAPI.settings.set('llm.apiKey', openaiKey);
         await window.electronAPI.settings.set('llm.apiModel', modelToUse);
         // Ensure LLM mode is set to 'api' so the app uses OpenAI
         await window.electronAPI.settings.set('llm.mode', 'api');
         await window.electronAPI.settings.set('llm.apiProvider', 'openai');
-        setCurrentStep('models');
+        setCurrentStep('output-dir');
       } else {
         // Use errorCode for specific, user-friendly messages
         if (result.errorCode === 'no_credits') {
@@ -227,29 +204,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
     } finally {
       setIsValidating(false);
     }
-  }, [openaiKey, selectedOpenAIModel, customOpenAIModel, useCustomOpenAIModel]);
-
-  const [downloadError, setDownloadError] = useState<string | null>(null);
-
-  const handleModelDownload = useCallback(async () => {
-    setIsLoading(true);
-    setDownloadError(null);
-    try {
-      const result = await window.electronAPI.setup.downloadModels();
-      if (result.success) {
-        setCurrentStep('output-dir');
-      } else {
-        const errorDetail = result.error ? `: ${result.error}` : '';
-        setDownloadError(`${t('modelDownload.downloadFailed')}${errorDetail}`);
-      }
-    } catch (error) {
-      console.error('Model download failed:', error);
-      const msg = error instanceof Error ? error.message : String(error);
-      setDownloadError(`${t('modelDownload.unexpectedError')} ${msg}`);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  }, [openaiKey, selectedOpenAIModel]);
 
   const handleOutputDirSelect = useCallback(async () => {
     const dir = await window.electronAPI.files.selectDirectory();
@@ -296,16 +251,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
             {/* Step 2: Python Setup */}
             {currentStep === 'python-setup' && (
               <PythonSetupStep 
-                onNext={() => setCurrentStep('hardware-select')}
-                onBack={goBack}
-              />
-            )}
-
-            {/* Step 3: Hardware Selection */}
-            {currentStep === 'hardware-select' && (
-              <HardwareSelectStep
-                config={hardwareConfig}
-                onSelect={handleHardwareSelect}
+                onNext={() => setCurrentStep('llm-choice')}
                 onBack={goBack}
               />
             )}
@@ -319,41 +265,13 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
               />
             )}
 
-            {/* Step 4: Model Selection */}
-            {currentStep === 'model-select' && (
-              llmChoice === 'ollama' ? (
-                <OllamaModelSelectStep
-                  selectedModel={selectedOllamaModel}
-                  onSelectModel={setSelectedOllamaModel}
-                  customModel={customOllamaModel}
-                  onCustomModelChange={setCustomOllamaModel}
-                  useCustom={useCustomOllamaModel}
-                  onUseCustomChange={setUseCustomOllamaModel}
-                  hardwareConfig={hardwareConfig}
-                  onNext={handleModelSelect}
-                  onBack={goBack}
-                />
-              ) : (
-                <OpenAIModelSelectStep
-                  selectedModel={selectedOpenAIModel}
-                  onSelectModel={setSelectedOpenAIModel}
-                  customModel={customOpenAIModel}
-                  onCustomModelChange={setCustomOpenAIModel}
-                  useCustom={useCustomOpenAIModel}
-                  onUseCustomChange={setUseCustomOpenAIModel}
-                  onNext={handleModelSelect}
-                  onBack={goBack}
-                />
-              )
-            )}
-
-            {/* Step 5: LLM Setup */}
+            {/* Step 4: LLM Setup */}
             {currentStep === 'llm-setup' && (
               llmChoice === 'ollama' ? (
                 <OllamaSetupStep
                   progress={ollamaProgress}
                   onStart={handleOllamaSetup}
-                  modelName={useCustomOllamaModel ? customOllamaModel : selectedOllamaModel}
+                  modelName={selectedOllamaModel}
                   onBack={goBack}
                 />
               ) : (
@@ -363,25 +281,13 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
                   error={keyError}
                   isValidating={isValidating}
                   onSubmit={handleOpenAISetup}
-                  modelName={useCustomOpenAIModel ? customOpenAIModel : selectedOpenAIModel}
+                  modelName={selectedOpenAIModel}
                   onBack={goBack}
                 />
               )
             )}
 
-            {/* Step 6: Model Downloads */}
-            {currentStep === 'models' && (
-              <ModelDownloadStep
-                progress={modelProgress}
-                onStart={handleModelDownload}
-                isLoading={isLoading}
-                onBack={goBack}
-                onNext={() => setCurrentStep('output-dir')}
-                error={downloadError}
-              />
-            )}
-
-            {/* Step 7: Output Directory */}
+            {/* Step 5: Output Directory */}
             {currentStep === 'output-dir' && (
               <OutputDirStep
                 outputDir={outputDir}
@@ -391,7 +297,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
               />
             )}
 
-            {/* Step 8: Complete */}
+            {/* Step 7: Complete */}
             {currentStep === 'complete' && (
               <CompleteStep onFinish={handleComplete} />
             )}

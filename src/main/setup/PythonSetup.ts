@@ -621,8 +621,8 @@ export class PythonSetup {
 
   /**
    * Install Python dependencies from requirements.txt
-   * Implements: Issue #7 (CPU-only PyTorch), Issue #9 (retry logic),
-   *             Issue #12 (better progress), Issue #13 (pip cache for resume)
+   * Implements: Issue #9 (retry logic), Issue #12 (better progress),
+   *             Issue #13 (pip cache for resume)
    */
   private async installDependencies(
     onProgress: (p: PythonSetupProgress) => void
@@ -636,23 +636,6 @@ export class PythonSetup {
     } catch (error) {
       console.warn('[PythonSetup] Failed to upgrade pip:', error);
       // Continue anyway
-    }
-
-    // Issue #7: Install PyTorch CPU-only first (saves ~1.8 GB download vs CUDA build)
-    // This dramatically reduces download size for users without NVIDIA GPUs.
-    // Users with CUDA GPUs can reinstall with GPU support later.
-    onProgress({
-      stage: 'installing-deps',
-      progress: 42,
-      message: 'Installing PyTorch CPU (~200 MB instead of ~2.3 GB CUDA)...',
-    });
-    try {
-      const torchCmd = `"${pythonPath}" -m pip install torch --index-url https://download.pytorch.org/whl/cpu`;
-      await execAsync(torchCmd, { timeout: 600000 });
-      console.log('[PythonSetup] PyTorch CPU-only installed successfully');
-    } catch (error) {
-      console.warn('[PythonSetup] Failed to install PyTorch CPU-only, will fall back to default:', error);
-      // Continue — pip install -r requirements.txt will install with default index
     }
 
     // Issue #9/#13: Retry logic with pip cache for resume after interruption
@@ -1293,9 +1276,15 @@ export class PythonSetup {
   }
 
   /**
-   * Get the path to the models cache directory
+   * Get the path to the models cache directory.
+   * If bundled models exist (dev or production build), point directly at them
+   * to avoid any file copying — the Python bridge passes this as MODELS_CACHE_DIR.
    */
   getModelsCacheDir(): string {
+    const bundledModelsDir = path.join(this.pythonDir, 'bundled-models');
+    if (fs.existsSync(bundledModelsDir) && fs.readdirSync(bundledModelsDir).length > 0) {
+      return bundledModelsDir;
+    }
     return this.modelsCacheDir;
   }
 

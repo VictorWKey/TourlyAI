@@ -11,11 +11,8 @@ export function StepIndicator({ currentStep, llmChoice }: { currentStep: SetupSt
   const steps = [
     { key: 'welcome', label: t('steps.start') },
     { key: 'python-setup', label: t('steps.python') },
-    { key: 'hardware-select', label: t('steps.hardware') },
     { key: 'llm-choice', label: t('steps.ai') },
-    { key: 'model-select', label: t('steps.model') },
     { key: 'llm-setup', label: t('steps.config') },
-    { key: 'models', label: t('steps.downloads') },
     { key: 'output-dir', label: t('steps.output') },
     { key: 'complete', label: t('steps.ready') },
   ];

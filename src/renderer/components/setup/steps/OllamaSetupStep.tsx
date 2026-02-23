@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import {
   CheckCircle2, Loader2, Download, ArrowLeft,
-  X, ChevronRight
+  X, ChevronRight, Settings, Info
 } from 'lucide-react';
 import { Button } from '../../ui/button';
 import { cn } from '../../../lib/utils';
@@ -63,6 +63,10 @@ export function OllamaSetupStep({
         <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 max-w-md mx-auto px-4">
           {t('ollamaSetup.selectedModel')} <span className="font-medium text-slate-700 dark:text-slate-300">{modelName}</span>
         </p>
+        <div className="flex items-center justify-center gap-1.5 mt-2 text-xs text-slate-400 dark:text-slate-500">
+          <Settings className="w-3 h-3" />
+          <span>{t('ollamaSetup.changeModelLater')}</span>
+        </div>
       </div>
 
       {isIdle ? (

@@ -187,7 +187,60 @@ async function main() {
     env: { ...process.env, PIP_DISABLE_PIP_VERSION_CHECK: '1' },
   });
 
-  // Step 5: Create completion marker
+  // Step 5: Download HuggingFace NLP models into the bundle
+  // These 4 models are required for the analysis pipeline (~2.5 GB total)
+  const bundledModelsDir = join(pythonDir, 'bundled-models');
+  const venvPythonExe = targetPlatform === 'win32'
+    ? join(venvDir, 'Scripts', 'python.exe')
+    : join(venvDir, 'bin', 'python3');
+
+  console.log('\nStep 5: Downloading HuggingFace NLP models (~2.5 GB)...');
+  if (existsSync(bundledModelsDir)) {
+    rmSync(bundledModelsDir, { recursive: true, force: true });
+  }
+  mkdirSync(bundledModelsDir, { recursive: true });
+
+  const modelsToDownload = [
+    'nlptown/bert-base-multilingual-uncased-sentiment',
+    'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2',
+    'victorwkey/tourism-subjectivity-bert',
+    'victorwkey/tourism-categories-bert',
+  ];
+
+  // Download each model using transformers/sentence-transformers snapshot_download
+  const downloadScript = `
+import os, sys
+os.environ['HF_HOME'] = sys.argv[1]
+os.environ['TRANSFORMERS_CACHE'] = sys.argv[1]
+
+from huggingface_hub import snapshot_download
+
+models = ${JSON.stringify(modelsToDownload)}
+for model_id in models:
+    print(f'  Downloading {model_id}...')
+    try:
+        snapshot_download(repo_id=model_id, cache_dir=sys.argv[1])
+        print(f'  ✓ {model_id} downloaded')
+    except Exception as e:
+        print(f'  ✗ Failed to download {model_id}: {e}')
+        sys.exit(1)
+
+print('All models downloaded successfully.')
+`;
+
+  const downloadScriptPath = join(projectRoot, '_download_models_temp.py');
+  writeFileSync(downloadScriptPath, downloadScript);
+
+  try {
+    execSync(`"${venvPythonExe}" "${downloadScriptPath}" "${bundledModelsDir}"`, {
+      stdio: 'inherit',
+      env: { ...process.env, HF_HOME: bundledModelsDir, TRANSFORMERS_CACHE: bundledModelsDir },
+    });
+  } finally {
+    rmSync(downloadScriptPath, { force: true });
+  }
+
+  // Step 6: Create completion marker
   const markerPath = join(venvDir, '.setup_complete');
   writeFileSync(markerPath, JSON.stringify({
     completedAt: new Date().toISOString(),
@@ -197,18 +250,16 @@ async function main() {
     bundled: true,
   }));
 
-  // Step 6: Clean up download
+  // Step 7: Clean up download
   rmSync(tarPath, { force: true });
 
   console.log('\n=== Bundle complete! ===');
   console.log(`  Platform:       ${targetPlatform}/${targetArch}`);
   console.log(`  Bundled Python: ${extractedPython}`);
   console.log(`  Virtual env:    ${venvDir}`);
-  console.log(`\nThe venv is ready and will be included in the packaged app.`);
-  console.log('Users will NOT need to download Python on first run.');
-  console.log('\nNote: ML models still need to be downloaded on first run (~1.5 GB).');
-  console.log('To also bundle models, run the app once to download them, then');
-  console.log('the models/ folder under hf_cache/ will be included automatically.');
+  console.log(`  Bundled models: ${bundledModelsDir}`);
+  console.log(`\nThe venv and models are ready and will be included in the packaged app.`);
+  console.log('Users will NOT need to download Python or NLP models on first run.');
 }
 
 main().catch((err) => {

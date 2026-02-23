@@ -40,7 +40,7 @@ function cleanPythonResourcesAfterComplete(
     'data/test_datasets', // Test datasets
     '__pycache__',  // Compiled bytecode
     '.pytest_cache', // pytest cache
-    'models',       // Models will be downloaded to userData at runtime
+    'models',       // Dev HF cache (python/models/); bundled-models/ is NOT touched
     'venv',         // Should never be here, but just in case
   ];
 

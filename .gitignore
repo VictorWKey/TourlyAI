@@ -107,8 +107,9 @@ python/data/shared/resumenes.json
 python/venv/
 venv/
 
-# Bundled Python standalone (created by scripts/bundle-python.mjs)
+# Bundled assets (created by scripts/bundle-python.mjs)
 python/bundled-env/
+python/bundled-models/
 python-standalone.tar.gz
 
 # Python cache

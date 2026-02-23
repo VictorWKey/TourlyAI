@@ -206,6 +206,7 @@ Remove-Item -Path "$env:APPDATA\TourlyAI-dev\Local Storage" -Recurse -Force -Err
 Remove-Item -Path "$env:APPDATA\TourlyAI-dev\Session Storage" -Recurse -Force -ErrorAction SilentlyContinue
 
 # (Optional) Delete cached HuggingFace models — will re-download on next run (~2.5 GB)
+# NOTE: Do NOT delete python\bundled-models\ — those are needed for production builds
 Remove-Item -Path "python\models\hf_cache" -Recurse -Force -ErrorAction SilentlyContinue
 
 # (Optional) Uninstall Ollama completely

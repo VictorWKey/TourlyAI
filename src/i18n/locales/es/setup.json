@@ -171,7 +171,8 @@
     "downloadingModelProgress": "Descargando modelo {{model}}...",
     "startingUnified": "Iniciando instalación unificada...",
     "installFailed": "La instalación falló. Por favor, inténtalo de nuevo.",
-    "installIncomplete": "La instalación de Ollama o del modelo no se completó correctamente."
+    "installIncomplete": "La instalación de Ollama o del modelo no se completó correctamente.",
+    "changeModelLater": "Puedes cambiar el modelo después en Configuración"
   },
   "openaiSetup": {
     "title": "Configura OpenAI",
