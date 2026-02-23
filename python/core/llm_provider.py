@@ -89,7 +89,7 @@ class LLMProvider:
                 # Añadir timeout más largo para modelos locales
                 timeout=120,
                 # Parámetros adicionales para mejor rendimiento
-                num_ctx=4096,  # Contexto más amplio
+                num_ctx=16384,  # Context window large enough for Phase 8 strategic insights
             )
 
             # Validar que Ollama esté disponible

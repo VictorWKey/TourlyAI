@@ -477,7 +477,12 @@ CRITICAL FORMATTING RULES:
 - Use bullet points (- ) for all lists
 - Use emoji indicators for section headers as shown above
 - Leave blank lines between sections for visual breathing room
-- This is a board-level strategic document — executive-report tone with precise data"""
+- This is a board-level strategic document — executive-report tone with precise data
+
+## ⚠️ KEY METRICS REMINDER — USE THESE EXACT NUMBERS:
+{resumen_kpis}
+
+Do NOT invent numbers. Use ONLY the metrics shown above."""
         else:
             template = """Eres el director de estrategia turística produciendo el reporte estratégico ejecutivo para un destino.
 
@@ -571,7 +576,12 @@ REGLAS CRÍTICAS DE FORMATO:
 - Usa viñetas (- ) para todas las listas
 - Usa indicadores emoji para encabezados de sección como se muestra arriba
 - Deja líneas en blanco entre secciones para respiro visual
-- Este es un documento estratégico de nivel directivo — tono de reporte ejecutivo con datos precisos"""
+- Este es un documento estratégico de nivel directivo — tono de reporte ejecutivo con datos precisos
+
+## ⚠️ RECORDATORIO DE MÉTRICAS CLAVE — USA ESTOS NÚMEROS EXACTOS:
+{resumen_kpis}
+
+NO inventes números. Usa SOLO las métricas mostradas arriba."""
 
         # Start simulated progress in background thread
         if self.progress_callback:
@@ -582,12 +592,27 @@ REGLAS CRÍTICAS DE FORMATO:
             )
             self._llm_progress_thread.start()
 
+        # Build a compact KPI reminder to place at the END of the prompt
+        # (LLMs attend most to tokens near the end — recency bias)
+        total = len(self.df)
+        pct_pos = round((self.df['Sentimiento'] == 'Positivo').sum() / total * 100, 1)
+        pct_neu = round((self.df['Sentimiento'] == 'Neutro').sum() / total * 100, 1)
+        pct_neg = round((self.df['Sentimiento'] == 'Negativo').sum() / total * 100, 1)
+        avg_rating = round(float(self.df['Calificacion'].mean()), 2) if 'Calificacion' in self.df.columns else 'N/A'
+        kpi_reminder = (
+            f'Total Reviews: {total} | '
+            f'Positive: {pct_pos}% | Neutral: {pct_neu}% | Negative: {pct_neg}% | '
+            f'Avg Rating: {avg_rating}/5'
+        )
+        logger.info(f'Phase 8 KPI reminder for LLM: {kpi_reminder}')
+
         try:
             result = self._invocar_llm_con_retry(
                 template=template,
                 input_data={
                     'metricas': metrics_context,
                     'resumen_estructurado': summary_context,
+                    'resumen_kpis': kpi_reminder,
                 },
                 max_retries=3,
                 descripcion='strategic insights',
