@@ -23,6 +23,7 @@ import esComponents from './locales/es/components.json';
 import esResults from './locales/es/results.json';
 import esReviews from './locales/es/reviews.json';
 import esReports from './locales/es/reports.json';
+import esHelp from './locales/es/help.json';
 
 // English translations
 import enCommon from './locales/en/common.json';
@@ -39,6 +40,7 @@ import enComponents from './locales/en/components.json';
 import enResults from './locales/en/results.json';
 import enReviews from './locales/en/reviews.json';
 import enReports from './locales/en/reports.json';
+import enHelp from './locales/en/help.json';
 
 export const defaultNS = 'common';
 export const supportedLanguages = ['es', 'en'] as const;
@@ -61,6 +63,7 @@ i18n.use(initReactI18next).init({
       results: esResults,
       reviews: esReviews,
       reports: esReports,
+      help: esHelp,
     },
     en: {
       common: enCommon,
@@ -77,6 +80,7 @@ i18n.use(initReactI18next).init({
       results: enResults,
       reviews: enReviews,
       reports: enReports,
+      help: enHelp,
     },
   },
   lng: 'es', // default language, will be overridden by stored setting
@@ -97,6 +101,7 @@ i18n.use(initReactI18next).init({
     'results',
     'reviews',
     'reports',
+    'help',
   ],
   interpolation: {
     escapeValue: false, // React already escapes

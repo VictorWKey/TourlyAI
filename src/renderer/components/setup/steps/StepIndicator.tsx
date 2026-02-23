@@ -10,7 +10,6 @@ export function StepIndicator({ currentStep, llmChoice }: { currentStep: SetupSt
   const { t } = useTranslation('setup');
   const steps = [
     { key: 'welcome', label: t('steps.start') },
-    { key: 'preferences', label: t('steps.preferences') },
     { key: 'python-setup', label: t('steps.python') },
     { key: 'hardware-select', label: t('steps.hardware') },
     { key: 'llm-choice', label: t('steps.ai') },

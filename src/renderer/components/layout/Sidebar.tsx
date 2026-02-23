@@ -24,6 +24,7 @@ import {
   MessageSquareText,
   ChevronLeft,
   ChevronRight,
+  HelpCircle,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useOllamaStatus } from '../../hooks/useOllama';
@@ -47,6 +48,7 @@ const navItems: NavItem[] = [
   { path: '/insights', icon: TrendingUp, labelKey: 'nav.insights' },
   { path: '/reviews', icon: MessageSquareText, labelKey: 'nav.reviews' },
   { path: '/reports', icon: FileBarChart, labelKey: 'nav.reports' },
+  { path: '/help', icon: HelpCircle, labelKey: 'nav.help' },
   { path: '/settings', icon: Settings, labelKey: 'nav.settings' },
 ];
 

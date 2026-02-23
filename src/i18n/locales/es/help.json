@@ -1,0 +1,108 @@
+{
+  "title": "Centro de Ayuda",
+  "description": "Preguntas frecuentes y guías para aprovechar TourlyAI al máximo",
+  "searchPlaceholder": "Buscar una pregunta...",
+  "noResults": "No se encontraron resultados. Intenta con otro término de búsqueda.",
+  "categories": {
+    "getting-started": "Primeros Pasos",
+    "data": "Datos y Dataset",
+    "analysis": "Pipeline de Análisis",
+    "ai": "IA y Modelos",
+    "results": "Resultados e Informes",
+    "troubleshooting": "Solución de Problemas"
+  },
+  "faq": {
+    "what-is-tourlyai": {
+      "question": "¿Qué es TourlyAI y qué puede hacer por mí?",
+      "answer": "TourlyAI es una aplicación de escritorio diseñada para profesionales del turismo. Analiza automáticamente las reseñas y opiniones de los clientes usando inteligencia artificial. Puede decirte qué piensan los clientes (positivo, negativo o neutro), descubrir los temas principales de los que hablan, clasificar las reseñas por categoría (como alojamiento, comida, transporte), y generar resúmenes ejecutivos y recomendaciones estratégicas — todo sin necesidad de conocimientos técnicos."
+    },
+    "who-is-it-for": {
+      "question": "¿Necesito saber de IA o programación para usarlo?",
+      "answer": "¡Para nada! TourlyAI está diseñado para profesionales del turismo sin conocimientos técnicos. Todo funciona con botones simples e interfaces visuales. Solo carga tus datos, presiona un botón y la app hace el resto. Los resultados se presentan como gráficos fáciles de entender, resúmenes y reportes."
+    },
+    "what-is-csv": {
+      "question": "¿Qué es un archivo CSV y cómo consigo uno?",
+      "answer": "Un archivo CSV (valores separados por comas) es un formato de hoja de cálculo simple que se puede abrir con Excel, Google Sheets o cualquier editor de texto. Si tus reseñas están en Excel, puedes guardarlas como CSV usando 'Archivo > Guardar como > CSV'. Si recopilas reseñas de plataformas como TripAdvisor o Google Reviews, muchas herramientas permiten exportarlas como archivos CSV."
+    },
+    "what-data-needed": {
+      "question": "¿Qué datos necesito para iniciar un análisis?",
+      "answer": "Necesitas un archivo CSV con al menos una columna que contenga las reseñas de texto. La app te guiará para seleccionar qué columna tiene las reseñas. Opcionalmente, también puedes incluir columnas para fechas, calificaciones o información del reseñador — mientras más datos proporciones, más rico será el análisis."
+    },
+    "how-many-reviews": {
+      "question": "¿Cuántas reseñas necesito para buenos resultados?",
+      "answer": "Se recomienda un mínimo de 50 reseñas para resultados significativos. Con 200-500 reseñas obtendrás un análisis de temas muy detallado y tendencias de sentimiento confiables. La app puede manejar miles de reseñas, pero el tiempo de procesamiento aumentará proporcionalmente."
+    },
+    "data-privacy": {
+      "question": "¿Mis datos están seguros? ¿Salen de mi computadora?",
+      "answer": "Tus datos permanecen en tu computadora en todo momento. Al usar el modo 'IA Local' (Ollama), todo se procesa localmente — nada se envía a internet. Si eliges el modo 'IA en la Nube' (OpenAI), solo el texto de las reseñas se envía a los servidores de OpenAI para el procesamiento de IA, pero OpenAI no usa tus datos para entrenamiento. Siempre puedes usar el modo de IA Local para máxima privacidad."
+    },
+    "what-are-phases": {
+      "question": "¿Qué son las 'fases' del análisis y qué hace cada una?",
+      "answer": "El análisis está organizado en 9 pasos secuenciales (fases):\n\n1. **Procesamiento Básico** — Limpia y prepara tus datos de texto\n2. **Estadísticas Básicas** — Genera estadísticas descriptivas\n3. **Análisis de Sentimientos** — Detecta si cada reseña es positiva, negativa o neutra\n4. **Análisis de Subjetividad** — Identifica si las reseñas son opiniones o hechos\n5. **Clasificación de Categorías** — Agrupa las reseñas por categoría turística (comida, alojamiento, etc.)\n6. **Análisis de Temas** — Descubre los temas principales de los que hablan los clientes usando IA\n7. **Resumen Inteligente** — Crea resúmenes estructurados usando IA\n8. **Insights Estratégicos** — Genera recomendaciones accionables usando IA\n9. **Visualizaciones y Métricas** — Produce gráficos y exporta datos analíticos\n\nLas fases 1-5 funcionan sin IA. Las fases 6-8 requieren un modelo de IA configurado."
+    },
+    "how-long-analysis": {
+      "question": "¿Cuánto tarda el análisis?",
+      "answer": "Depende del número de reseñas y las capacidades de tu computadora. Para un dataset de ~300 reseñas:\n- Fases 1-5 (sin IA): aproximadamente 2-5 minutos\n- Fases 6-8 (con IA): aproximadamente 5-15 minutos\n- Fase 9 (visualizaciones): aproximadamente 1-2 minutos\n\nLa primera ejecución puede tardar más porque la app descarga y carga los modelos de IA. Las ejecuciones posteriores son más rápidas."
+    },
+    "what-is-ollama": {
+      "question": "¿Qué es Ollama y por qué la app lo menciona?",
+      "answer": "Ollama es un programa gratuito que ejecuta modelos de IA en tu propia computadora, lo que significa que tus datos nunca salen de tu máquina. TourlyAI puede instalarlo automáticamente durante la configuración. Piensa en él como un 'motor de IA' local — es lo que impulsa las fases avanzadas del análisis (temas, resúmenes e insights) sin necesitar conexión a internet ni servicios de pago."
+    },
+    "local-vs-cloud": {
+      "question": "¿Cuál es la diferencia entre 'IA Local' e 'IA en la Nube'?",
+      "answer": "**IA Local (Ollama):** La IA se ejecuta en tu computadora. Es gratuita, privada y funciona sin internet. Sin embargo, requiere una computadora razonablemente potente (8+ GB RAM recomendado) y los resultados pueden ser ligeramente menos refinados.\n\n**IA en la Nube (OpenAI):** La IA se ejecuta en los servidores de OpenAI. Produce resultados de mayor calidad y funciona en cualquier computadora, pero requiere conexión a internet y una clave API de OpenAI (servicio de pago). El texto de las reseñas se envía a OpenAI para su procesamiento.\n\n**Sin IA:** Puedes ejecutar las fases 1-5 sin ninguna IA. Los temas, resúmenes e insights no estarán disponibles."
+    },
+    "what-is-api-key": {
+      "question": "¿Qué es una clave API y cómo consigo una?",
+      "answer": "Una clave API es como una contraseña que permite a TourlyAI comunicarse con el servicio de IA en la nube de OpenAI. Solo necesitas una si eliges el modo 'IA en la Nube'. Para obtener una:\n1. Ve a platform.openai.com y crea una cuenta\n2. Navega a 'API Keys' en la configuración de tu cuenta\n3. Haz clic en 'Create new secret key'\n4. Cópiala y pégala en la Configuración de TourlyAI\n\nOpenAI cobra una pequeña tarifa por uso (típicamente unos centavos por análisis). Puedes evitar esto completamente usando IA Local (Ollama)."
+    },
+    "what-is-sentiment": {
+      "question": "¿Qué significa 'análisis de sentimientos'?",
+      "answer": "El análisis de sentimientos lee automáticamente cada reseña y determina si el sentimiento del cliente es positivo (contento, satisfecho), negativo (descontento, quejándose) o neutro (informativo, sin emoción fuerte). Esto te ayuda a ver rápidamente la satisfacción general del cliente sin leer cada reseña individualmente."
+    },
+    "what-are-categories": {
+      "question": "¿Cuáles son las categorías de reseñas?",
+      "answer": "TourlyAI clasifica cada reseña en categorías relevantes para el turismo como: Alojamiento, Gastronomía (comida y restaurantes), Transporte, Eventos y Festivales, Historia y Cultura, Compras, Deportes y Aventura, Vida Nocturna, Naturaleza, Personal y Servicio, Seguridad y Fauna. Una reseña puede pertenecer a múltiples categorías."
+    },
+    "what-are-topics": {
+      "question": "¿Qué es el 'análisis de temas'?",
+      "answer": "El análisis de temas usa IA para descubrir los temas y sub-temas principales que aparecen en todas tus reseñas. A diferencia de las categorías (que están predefinidas), los temas emergen naturalmente de los datos. Por ejemplo, la IA podría descubrir que muchas reseñas mencionan 'calidad del desayuno', 'proceso de check-in' o 'limpieza de la piscina' — temas que no preguntaste explícitamente."
+    },
+    "what-are-insights": {
+      "question": "¿Qué son los 'insights estratégicos'?",
+      "answer": "Los insights estratégicos son recomendaciones accionables generadas por IA basándose en patrones encontrados en tus reseñas. Destacan fortalezas clave a mantener y debilidades a abordar, y sugieren acciones de mejora concretas priorizadas por importancia. Piensa en ellos como tener un analista de datos resumiendo tus reseñas y dándote un plan de acción."
+    },
+    "how-to-read-charts": {
+      "question": "¿Cómo interpreto los gráficos y visualizaciones?",
+      "answer": "La pestaña Dashboard muestra gráficos interactivos:\n- **Gráficos de pastel/dona:** Muestran proporciones (ej. 60% positivo, 25% negativo, 15% neutro)\n- **Gráficos de barras:** Comparan valores entre categorías o temas\n- **Nubes de palabras:** Las palabras más grandes aparecen con mayor frecuencia en las reseñas\n- **Gráficos de línea temporal:** Muestran cómo cambia el sentimiento a lo largo del tiempo\n\nPuedes pasar el cursor sobre cualquier elemento del gráfico para más detalles. Todos los gráficos pueden incluirse en reportes PDF."
+    },
+    "how-to-export": {
+      "question": "¿Puedo exportar o compartir los resultados?",
+      "answer": "¡Sí! Ve a la página de Reportes para generar reportes PDF profesionales. Puedes elegir qué secciones incluir (resúmenes, gráficos, estadísticas), personalizar el título del reporte y seleccionar entre plantillas (Ejecutivo, Detallado, Visual o Personalizado). Los reportes se guardan en tu computadora y pueden compartirse por correo electrónico o imprimirse."
+    },
+    "analysis-failed": {
+      "question": "Una fase del análisis falló. ¿Qué debo hacer?",
+      "answer": "No te preocupes — las fases fallidas pueden re-ejecutarse individualmente. Soluciones comunes:\n1. **Revisa tus datos:** Asegúrate de que el archivo CSV tenga texto en la columna de reseñas\n2. **Revisa el estado de la IA:** Para las fases 6-8, asegúrate de que Ollama esté ejecutándose (indicador verde en la barra lateral) o que tu clave API esté configurada\n3. **Reinicia la app:** Cierra y vuelve a abrir TourlyAI\n4. **Re-ejecuta la fase:** Haz clic en el botón de reproducción en la fase fallida\n\nSi el problema persiste, intenta ejecutar las fases anteriores primero (deben completarse en orden)."
+    },
+    "ollama-not-running": {
+      "question": "La app dice 'Motor de IA no disponible'. ¿Qué hago?",
+      "answer": "Esto significa que Ollama (la IA local) no está ejecutándose. Prueba estos pasos:\n1. Revisa la barra lateral — si el indicador de IA está rojo, Ollama está fuera de línea\n2. Ve a Configuración > Gestión de Ollama y haz clic en 'Iniciar Ollama'\n3. Si eso no funciona, reinicia tu computadora y abre TourlyAI de nuevo\n4. También puedes cambiar al modo 'IA en la Nube' en Configuración si tienes una clave API de OpenAI\n5. O selecciona 'Sin IA' para ejecutar solo las fases 1-5"
+    },
+    "change-language": {
+      "question": "¿Puedo cambiar el idioma de la app?",
+      "answer": "¡Sí! Ve a Configuración y busca la opción de Idioma. TourlyAI soporta inglés y español. Ten en cuenta que cambiar el idioma solo cambia la interfaz — los resúmenes y análisis generados previamente mantienen su idioma original. Para regenerarlos en el nuevo idioma, vuelve a ejecutar las fases de análisis correspondientes."
+    },
+    "reset-app": {
+      "question": "¿Cómo reinicio la app para empezar de cero?",
+      "answer": "Si quieres iniciar un análisis completamente nuevo, puedes:\n1. Ir a Configuración > Avanzado y usar las opciones de reinicio\n2. Cargar un nuevo dataset en la página de Datos (esto limpia los resultados anteriores)\n3. Re-ejecutar las fases del análisis desde el principio\n\nSi quieres reiniciar completamente la app (incluyendo reinstalar modelos de IA), consulta la documentación del README para instrucciones completas de reinicio."
+    },
+    "supported-languages-reviews": {
+      "question": "¿En qué idiomas pueden estar las reseñas?",
+      "answer": "El modelo de análisis de sentimientos soporta múltiples idiomas incluyendo inglés, español, francés, alemán, italiano, portugués y más. Los modelos de IA para temas y resúmenes funcionan mejor con inglés y español, pero pueden manejar otros idiomas con calidad variable. Para mejores resultados, usa reseñas en un solo idioma por análisis."
+    },
+    "computer-requirements": {
+      "question": "¿Qué computadora necesito para ejecutar TourlyAI?",
+      "answer": "Requisitos mínimos:\n- **Sistema operativo:** Windows 10 o posterior\n- **RAM:** 8 GB (16 GB recomendado para IA Local)\n- **Espacio en disco:** ~3 GB para la app y modelos\n- **Internet:** Requerido solo para la configuración inicial, modo IA en la Nube o descarga de modelos\n\nPara IA Local (Ollama), se recomienda una computadora con 16 GB de RAM y un procesador moderno para un rendimiento fluido. El modo IA en la Nube funciona bien en cualquier computadora."
+    }
+  }
+}

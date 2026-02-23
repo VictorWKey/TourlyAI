@@ -19,7 +19,12 @@
   "welcome": {
     "title": "¡Bienvenido a TourlyAI!",
     "description": "Vamos a configurar todo para que puedas comenzar a analizar opiniones con el poder de la inteligencia artificial. Solo tomará unos minutos.",
-    "start": "Comenzar"
+    "start": "Comenzar",
+    "themeTitle": "Tema Visual",
+    "themeDescription": "Selecciona el tema que prefieras para la interfaz",
+    "languageTitle": "Idioma",
+    "languageDescription": "Elige el idioma de la aplicación",
+    "changeLater": "Puedes cambiar estas preferencias en cualquier momento desde la pantalla de Configuración"
   },
   "preferences": {
     "title": "Personaliza Tu Experiencia",

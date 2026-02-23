@@ -6,7 +6,6 @@
 
 export type SetupStep =
   | 'welcome'
-  | 'preferences'
   | 'python-setup'
   | 'hardware-select'
   | 'llm-choice'
@@ -49,7 +48,6 @@ export interface OpenAIModelOption {
 /** Step order for navigation */
 export const STEP_ORDER: SetupStep[] = [
   'welcome',
-  'preferences',
   'python-setup',
   'hardware-select',
   'llm-choice',

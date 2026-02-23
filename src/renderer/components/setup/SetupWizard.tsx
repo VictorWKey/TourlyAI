@@ -21,7 +21,6 @@ import type { SetupStep, HardwareConfig, SetupWizardProps } from './types';
 import {
   StepIndicator,
   WelcomeStep,
-  PreferencesStep,
   PythonSetupStep,
   HardwareSelectStep,
   LLMChoiceStep,
@@ -286,15 +285,10 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
           <AnimatePresence mode="wait">
             {/* Step 1: Welcome */}
             {currentStep === 'welcome' && (
-              <WelcomeStep onNext={() => setCurrentStep('preferences')} />
+              <WelcomeStep onNext={() => setCurrentStep('python-setup')} />
             )}
 
-            {/* Step 2: Preferences */}
-            {currentStep === 'preferences' && (
-              <PreferencesStep onNext={() => setCurrentStep('python-setup')} onBack={goBack} />
-            )}
-
-            {/* Step 3: Python Setup */}
+            {/* Step 2: Python Setup */}
             {currentStep === 'python-setup' && (
               <PythonSetupStep 
                 onNext={() => setCurrentStep('hardware-select')}

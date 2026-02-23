@@ -19,7 +19,12 @@
   "welcome": {
     "title": "Welcome to TourlyAI!",
     "description": "Let's set everything up so you can start analyzing reviews with the power of artificial intelligence. It only takes a few minutes.",
-    "start": "Get Started"
+    "start": "Get Started",
+    "themeTitle": "Visual Theme",
+    "themeDescription": "Select your preferred interface theme",
+    "languageTitle": "Language",
+    "languageDescription": "Choose the application language",
+    "changeLater": "You can change these preferences at any time from the Settings screen"
   },
   "preferences": {
     "title": "Personalize Your Experience",

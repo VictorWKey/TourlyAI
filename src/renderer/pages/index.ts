@@ -13,4 +13,5 @@ export { Resumenes } from './Resumenes';
 export { InsightsEstrategicos } from './InsightsEstrategicos';
 export { Reviews } from './Reviews';
 export { Reports } from './Reports';
+export { Help } from './Help';
 export { Settings } from './Settings';

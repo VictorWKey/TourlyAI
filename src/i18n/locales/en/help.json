@@ -1,0 +1,108 @@
+{
+  "title": "Help Center",
+  "description": "Frequently asked questions and guides to get the most out of TourlyAI",
+  "searchPlaceholder": "Search for a question...",
+  "noResults": "No results found. Try a different search term.",
+  "categories": {
+    "getting-started": "Getting Started",
+    "data": "Data & Dataset",
+    "analysis": "Analysis Pipeline",
+    "ai": "AI & Models",
+    "results": "Results & Reports",
+    "troubleshooting": "Troubleshooting"
+  },
+  "faq": {
+    "what-is-tourlyai": {
+      "question": "What is TourlyAI and what can it do for me?",
+      "answer": "TourlyAI is a desktop application designed for tourism professionals. It automatically analyzes customer reviews and opinions using artificial intelligence. It can tell you what customers think (positive, negative, or neutral), discover the main topics they talk about, classify reviews by category (such as accommodation, food, transportation), and generate executive summaries and strategic recommendations — all without needing any technical knowledge."
+    },
+    "who-is-it-for": {
+      "question": "Do I need to know about AI or programming to use it?",
+      "answer": "Not at all! TourlyAI is designed for tourism professionals with no technical background. Everything works with simple buttons and visual interfaces. You just load your data, press a button, and the app does the rest. The results are presented as easy-to-read charts, summaries, and reports."
+    },
+    "what-is-csv": {
+      "question": "What is a CSV file and how do I get one?",
+      "answer": "A CSV (Comma-Separated Values) file is a simple spreadsheet format that can be opened with Excel, Google Sheets, or any text editor. If your reviews are in Excel, you can save them as CSV using 'File > Save As > CSV'. If you collect reviews from platforms like TripAdvisor or Google Reviews, many tools let you export them as CSV files."
+    },
+    "what-data-needed": {
+      "question": "What data do I need to start an analysis?",
+      "answer": "You need a CSV file with at least one column containing text reviews. The app will guide you to select which column has the reviews. Optionally, you can also include columns for dates, ratings, or reviewer information — the more data you provide, the richer the analysis will be."
+    },
+    "how-many-reviews": {
+      "question": "How many reviews do I need for good results?",
+      "answer": "A minimum of 50 reviews is recommended for meaningful results. With 200-500 reviews, you'll get very detailed topic analysis and reliable sentiment trends. The app can handle thousands of reviews, but processing time will increase accordingly."
+    },
+    "data-privacy": {
+      "question": "Is my data safe? Does it leave my computer?",
+      "answer": "Your data stays on your computer at all times. When using the 'Local AI' mode (Ollama), everything is processed locally — nothing is sent to the internet. If you choose the 'Cloud AI' mode (OpenAI), only the text of the reviews is sent to OpenAI's servers for AI processing, but OpenAI does not use your data for training. You can always use Local AI mode for maximum privacy."
+    },
+    "what-are-phases": {
+      "question": "What are the analysis 'phases' and what does each one do?",
+      "answer": "The analysis is organized in 9 sequential steps (phases):\n\n1. **Basic Processing** — Cleans and prepares your text data\n2. **Basic Statistics** — Generates descriptive statistics\n3. **Sentiment Analysis** — Detects if each review is positive, negative, or neutral\n4. **Subjectivity Analysis** — Identifies if reviews are opinion-based or factual\n5. **Category Classification** — Groups reviews by tourism category (food, lodging, etc.)\n6. **Topic Analysis** — Discovers the main themes customers talk about using AI\n7. **Intelligent Summary** — Creates structured summaries using AI\n8. **Strategic Insights** — Generates actionable recommendations using AI\n9. **Visualizations & Metrics** — Produces charts and exports analytical data\n\nPhases 1-5 run without AI. Phases 6-8 require an AI model to be configured."
+    },
+    "how-long-analysis": {
+      "question": "How long does the analysis take?",
+      "answer": "It depends on the number of reviews and your computer's capabilities. For a dataset of ~300 reviews:\n- Phases 1-5 (no AI): approximately 2-5 minutes\n- Phases 6-8 (with AI): approximately 5-15 minutes\n- Phase 9 (visualizations): approximately 1-2 minutes\n\nThe first run may take longer because the app downloads and loads the AI models. Subsequent runs are faster."
+    },
+    "what-is-ollama": {
+      "question": "What is Ollama and why does the app mention it?",
+      "answer": "Ollama is a free program that runs AI models on your own computer, meaning your data never leaves your machine. TourlyAI can install it automatically during setup. Think of it as a local 'AI engine' — it's what powers the advanced analysis phases (topics, summaries, and insights) without needing an internet connection or paid services."
+    },
+    "local-vs-cloud": {
+      "question": "What is the difference between 'Local AI' and 'Cloud AI'?",
+      "answer": "**Local AI (Ollama):** The AI runs on your computer. It's free, private, and works offline. However, it requires a reasonably powerful computer (8+ GB RAM recommended) and results may be slightly less refined.\n\n**Cloud AI (OpenAI):** The AI runs on OpenAI's servers. It produces higher-quality results and works on any computer, but requires an internet connection and an OpenAI API key (paid service). Review text is sent to OpenAI for processing.\n\n**No AI:** You can run phases 1-5 without any AI. Topics, summaries, and insights won't be available."
+    },
+    "what-is-api-key": {
+      "question": "What is an API key and how do I get one?",
+      "answer": "An API key is like a password that lets TourlyAI communicate with OpenAI's cloud AI service. You only need one if you choose 'Cloud AI' mode. To get one:\n1. Go to platform.openai.com and create an account\n2. Navigate to 'API Keys' in your account settings\n3. Click 'Create new secret key'\n4. Copy it and paste it in TourlyAI's Settings\n\nOpenAI charges a small fee per use (typically a few cents per analysis). You can skip this entirely by using Local AI (Ollama) instead."
+    },
+    "what-is-sentiment": {
+      "question": "What does 'sentiment analysis' mean?",
+      "answer": "Sentiment analysis automatically reads each review and determines whether the customer's feeling is positive (happy, satisfied), negative (unhappy, complaining), or neutral (informational, no strong emotion). This helps you quickly see overall customer satisfaction without reading every single review."
+    },
+    "what-are-categories": {
+      "question": "What are the review categories?",
+      "answer": "TourlyAI classifies each review into tourism-relevant categories such as: Accommodation, Gastronomy (food & dining), Transportation, Events & Festivals, History & Culture, Shopping, Sports & Adventure, Nightlife, Nature, Staff & Service, Safety, and Wildlife. A review can belong to multiple categories."
+    },
+    "what-are-topics": {
+      "question": "What is 'topic analysis'?",
+      "answer": "Topic analysis uses AI to discover the main themes and sub-themes that appear across all your reviews. Unlike categories (which are predefined), topics emerge naturally from the data. For example, the AI might discover that many reviews mention 'breakfast quality', 'check-in process', or 'pool cleanliness' — themes you didn't explicitly ask about."
+    },
+    "what-are-insights": {
+      "question": "What are 'strategic insights'?",
+      "answer": "Strategic insights are actionable recommendations generated by AI based on patterns found in your reviews. They highlight key strengths to maintain and weaknesses to address, and suggest concrete improvement actions ranked by priority. Think of them as having a data analyst summarize your reviews and give you an action plan."
+    },
+    "how-to-read-charts": {
+      "question": "How do I interpret the charts and visualizations?",
+      "answer": "The Dashboard tab shows interactive charts:\n- **Pie/donut charts:** Show proportions (e.g., 60% positive, 25% negative, 15% neutral)\n- **Bar charts:** Compare values across categories or topics\n- **Word clouds:** Larger words appear more frequently in reviews\n- **Timeline charts:** Show how sentiment changes over time\n\nYou can hover over any chart element for more details. All charts can be included in PDF reports."
+    },
+    "how-to-export": {
+      "question": "Can I export or share the results?",
+      "answer": "Yes! Go to the Reports page to generate professional PDF reports. You can choose which sections to include (summaries, charts, statistics), customize the report title, and select from templates (Executive, Detailed, Visual, or Custom). Reports are saved to your computer and can be shared via email or printed."
+    },
+    "analysis-failed": {
+      "question": "An analysis phase failed. What should I do?",
+      "answer": "Don't worry — failed phases can be re-run individually. Common solutions:\n1. **Check your data:** Make sure the CSV file has text in the reviews column\n2. **Check AI status:** For phases 6-8, ensure Ollama is running (green indicator in the sidebar) or your API key is configured\n3. **Restart the app:** Close and reopen TourlyAI\n4. **Re-run the phase:** Click the play button on the failed phase\n\nIf the problem persists, try running the earlier phases first (they must complete in order)."
+    },
+    "ollama-not-running": {
+      "question": "The app says 'AI engine is not available'. What do I do?",
+      "answer": "This means Ollama (the local AI) isn't running. Try these steps:\n1. Check the sidebar — if the AI indicator is red, Ollama is offline\n2. Go to Settings > Ollama Management and click 'Start Ollama'\n3. If that doesn't work, restart your computer and open TourlyAI again\n4. You can also switch to 'Cloud AI' mode in Settings if you have an OpenAI API key\n5. Or select 'Without AI' to run only phases 1-5"
+    },
+    "change-language": {
+      "question": "Can I change the app language?",
+      "answer": "Yes! Go to Settings and look for the Language option. TourlyAI supports English and Spanish. Note that changing the language changes the interface only — previously generated summaries and analyses keep their original language. To regenerate them in the new language, re-run the corresponding analysis phases."
+    },
+    "reset-app": {
+      "question": "How do I reset the app to start fresh?",
+      "answer": "If you want to start a completely new analysis, you can:\n1. Go to Settings > Advanced and use the reset options\n2. Load a new dataset in the Data page (this clears previous results)\n3. Re-run the analysis phases from the beginning\n\nIf you want to fully reset the app (including reinstalling AI models), check the README documentation for complete reset instructions."
+    },
+    "supported-languages-reviews": {
+      "question": "What languages can the reviews be in?",
+      "answer": "The sentiment analysis model supports multiple languages including English, Spanish, French, German, Italian, Portuguese, and more. The AI models for topics and summaries work best with English and Spanish, but can handle other languages with varying quality. For best results, use reviews in a single language per analysis."
+    },
+    "computer-requirements": {
+      "question": "What computer do I need to run TourlyAI?",
+      "answer": "Minimum requirements:\n- **Operating system:** Windows 10 or later\n- **RAM:** 8 GB (16 GB recommended for Local AI)\n- **Disk space:** ~3 GB for the app and models\n- **Internet:** Required only for initial setup, Cloud AI mode, or downloading models\n\nFor Local AI (Ollama), a computer with 16 GB RAM and a modern processor is recommended for smooth performance. Cloud AI mode works well on any computer."
+    }
+  }
+}

@@ -173,7 +173,7 @@ export function OllamaSetupStep({
                 </div>
                 
                 {!isError && (
-                  <div className="relative h-6 bg-slate-200 rounded-full overflow-hidden" role="progressbar" aria-valuenow={Math.round(progress.unifiedProgress ?? progress.progress)} aria-valuemin={0} aria-valuemax={100} aria-label={getCleanStatus()}>
+                  <div className="relative h-6 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden" role="progressbar" aria-valuenow={Math.round(progress.unifiedProgress ?? progress.progress)} aria-valuemin={0} aria-valuemax={100} aria-label={getCleanStatus()}>
                     <div
                       className={cn(
                         "absolute inset-y-0 left-0 rounded-full shadow-sm transition-all duration-300 ease-out",

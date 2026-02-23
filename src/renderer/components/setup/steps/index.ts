@@ -1,6 +1,5 @@
 export { StepIndicator } from './StepIndicator';
 export { WelcomeStep } from './WelcomeStep';
-export { PreferencesStep } from './PreferencesStep';
 export { PythonSetupStep } from './PythonSetupStep';
 export { DetectionStatusBadge } from './DetectionStatusBadge';
 export { HardwareSelectStep } from './HardwareSelectStep';
