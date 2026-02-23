@@ -70,12 +70,32 @@ class LLMProvider:
                 model=ConfigLLM.OPENAI_MODEL, temperature=ConfigLLM.LLM_TEMPERATURE, api_key=ConfigLLM.OPENAI_API_KEY
             )
 
+            # Validate that OpenAI is reachable and the key has credits
+            self._validar_openai()
+
             print(f'   ✓ LLM inicializado: OpenAI ({ConfigLLM.OPENAI_MODEL})')
 
         except ImportError as err:
             raise ImportError('langchain_openai no está instalado. Instala con: pip install langchain-openai') from err
         except Exception as e:
             raise RuntimeError(f'Error al inicializar OpenAI: {e}') from e
+
+    def _validar_openai(self):
+        """Valida que la API key de OpenAI tenga créditos disponibles."""
+        from .llm_utils import LLMQuotaExhaustedError, is_openai_quota_error
+
+        try:
+            test_response = self._llm.invoke('Respond only with OK')
+            if not test_response:
+                raise RuntimeError('OpenAI no respondió correctamente')
+        except Exception as e:
+            if is_openai_quota_error(e):
+                raise LLMQuotaExhaustedError(
+                    'OPENAI_QUOTA_EXHAUSTED: Tu API key de OpenAI no tiene créditos disponibles. '
+                    'Agrega fondos en https://platform.openai.com/account/billing '
+                    'o cambia al modo de IA local (Ollama) en la configuración.'
+                ) from e
+            raise
 
     def _inicializar_ollama(self):
         """Inicializa el modelo Ollama local."""
@@ -319,7 +339,7 @@ class RobustStructuredChain:
         """
         import time
 
-        from .llm_utils import LLMRetryExhaustedError, parsear_pydantic_seguro
+        from .llm_utils import LLMQuotaExhaustedError, LLMRetryExhaustedError, is_openai_quota_error, parsear_pydantic_seguro
 
         retries = max_retries if max_retries is not None else self.max_retries
         ultimo_error = None
@@ -360,6 +380,14 @@ class RobustStructuredChain:
                 raise ValueError(f'No se pudo parsear respuesta: {texto[:200]}...')
 
             except Exception as e:
+                # Don't retry non-transient errors (quota exhausted, auth failures)
+                if is_openai_quota_error(e):
+                    raise LLMQuotaExhaustedError(
+                        'OPENAI_QUOTA_EXHAUSTED: Tu API key de OpenAI no tiene créditos disponibles. '
+                        'Agrega fondos en https://platform.openai.com/account/billing '
+                        'o cambia al modo de IA local (Ollama) en la configuración.'
+                    ) from e
+
                 ultimo_error = e
                 logger.warning(f'Intento {intento + 1}/{retries + 1} falló: {str(e)[:100]}...')
 

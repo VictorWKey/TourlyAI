@@ -684,5 +684,21 @@ export function registerFileHandlers(): void {
     }
   });
 
+  // Delete a single file from disk (used for report deletion, etc.)
+  ipcMain.handle('files:delete', async (_, filePath: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      if (!filePath || typeof filePath !== 'string') {
+        return { success: false, error: 'Ruta de archivo inválida' };
+      }
+      const absolutePath = path.isAbsolute(filePath) ? filePath : path.resolve(filePath);
+      await fs.unlink(absolutePath);
+      console.log(`[IPC] Deleted file: ${absolutePath}`);
+      return { success: true };
+    } catch (error) {
+      console.error('[IPC] Error deleting file:', error);
+      return { success: false, error: (error as Error).message };
+    }
+  });
+
   console.log('[IPC] File handlers registered');
 }

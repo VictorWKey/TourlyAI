@@ -493,6 +493,8 @@ REGLAS DE FORMATO IMPORTANTES:
         Returns:
             Respuesta del LLM o string vacío
         """
+        from .llm_utils import is_openai_quota_error
+
         config = RetryConfig(max_retries=max_retries)
         ultimo_error = None
 
@@ -507,6 +509,18 @@ REGLAS DE FORMATO IMPORTANTES:
                 raise ValueError('Respuesta vacía del LLM')
 
             except Exception as e:
+                # Don't retry non-transient errors (quota/billing)
+                if is_openai_quota_error(e):
+                    logger.error(
+                        f'OpenAI quota exhausted for {descripcion}. '
+                        'Add funds at https://platform.openai.com/account/billing'
+                    )
+                    raise RuntimeError(
+                        'OPENAI_QUOTA_EXHAUSTED: Tu API key de OpenAI no tiene créditos disponibles. '
+                        'Agrega fondos en https://platform.openai.com/account/billing '
+                        'o cambia al modo de IA local (Ollama) en la configuración.'
+                    ) from e
+
                 ultimo_error = e
                 logger.warning(f'Intento {intento + 1}/{max_retries + 1} falló para {descripcion}: {str(e)[:100]}')
 

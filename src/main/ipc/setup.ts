@@ -224,29 +224,82 @@ export function registerSetupHandlers(): void {
   ipcMain.handle('setup:validate-openai-key', async (_, apiKey: string) => {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-      const response = await fetch('https://api.openai.com/v1/models', {
+      // Step 1: Check if the key is valid (authentication)
+      const authResponse = await fetch('https://api.openai.com/v1/models', {
         headers: { Authorization: `Bearer ${apiKey}` },
         signal: controller.signal,
       });
 
+      if (!authResponse.ok) {
+        clearTimeout(timeoutId);
+        return { valid: false, error: 'Clave API inválida', errorCode: 'invalid_key' };
+      }
+
+      // Step 2: Check if the key has billing/credits with a minimal API call
+      // The /v1/models endpoint succeeds even with no credits, so we must
+      // make a real inference call to detect billing issues.
+      try {
+        const billingController = new AbortController();
+        const billingTimeoutId = setTimeout(() => billingController.abort(), 15000);
+
+        const billingResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [{ role: 'user', content: 'hi' }],
+            max_tokens: 1,
+          }),
+          signal: billingController.signal,
+        });
+
+        clearTimeout(billingTimeoutId);
+
+        if (!billingResponse.ok) {
+          const errorBody = await billingResponse.json().catch(() => ({}));
+          const errorCode = (errorBody as { error?: { code?: string } })?.error?.code || '';
+          const errorType = (errorBody as { error?: { type?: string } })?.error?.type || '';
+
+          if (
+            billingResponse.status === 429 &&
+            (errorCode === 'insufficient_quota' || errorType === 'insufficient_quota')
+          ) {
+            return { valid: false, error: 'insufficient_quota', errorCode: 'no_credits' };
+          }
+
+          if (billingResponse.status === 429) {
+            // Rate limited but not quota — key is fine, just temporarily throttled
+            // Treat as valid since the key works
+          } else {
+            // Other errors (e.g., 403, 500) — still mark key as valid since auth passed
+            console.warn(`[Setup] OpenAI billing check returned ${billingResponse.status}:`, errorBody);
+          }
+        }
+      } catch (billingError) {
+        // If the billing check itself fails (network, timeout), don't block the user.
+        // The key passed auth — we'll let them proceed and handle quota errors at runtime.
+        console.warn('[Setup] OpenAI billing check failed, proceeding with valid key:', billingError);
+      }
+
       clearTimeout(timeoutId);
 
-      const valid = response.ok;
-      if (valid) {
-        setupManager.updateSetupState({ openaiKeyConfigured: true });
-        
-        // Save the API key to settings
-        const store = getStore();
-        store.set('llm.apiKey', apiKey);
-        store.set('llm.apiProvider', 'openai');
-      }
+      // Key is valid and has credits (or billing check was inconclusive)
+      setupManager.updateSetupState({ openaiKeyConfigured: true });
       
-      return { valid, error: valid ? null : 'Clave API inválida' };
+      // Save the API key to settings
+      const store = getStore();
+      store.set('llm.apiKey', apiKey);
+      store.set('llm.apiProvider', 'openai');
+      
+      return { valid: true, error: null };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      return { valid: false, error: message };
+      return { valid: false, error: message, errorCode: 'connection_error' };
     }
   });
 

@@ -27,6 +27,7 @@ from config.config import ConfigDataset
 
 # Importar proveedor de LLM unificado y utilidades robustas
 from .llm_provider import LLMRetryExhaustedError, crear_chain_robusto
+from .llm_utils import LLMQuotaExhaustedError
 
 os.environ['TOKENIZERS_PARALLELISM'] = 'false'
 warnings.filterwarnings('ignore')
@@ -635,6 +636,10 @@ IMPORTANTE - FORMATO JSON:
             # Usar fallback basado en keywords
             fallback_names = self._generar_etiquetas_fallback(topic_data, categoria)
             topic_names.update(fallback_names)
+
+        except LLMQuotaExhaustedError:
+            # Quota errors are non-transient — propagate immediately with clear message
+            raise
 
         except Exception as e:
             logger.error(f'   ❌ Error inesperado etiquetando tópicos: {e}')

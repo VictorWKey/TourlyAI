@@ -184,8 +184,8 @@ Start-Sleep -Seconds 2
 # Delete Python virtual environment (forces reinstall on next run)
 Remove-Item -Recurse -Force "python\venv" -ErrorAction SilentlyContinue
 
-# Restore the original dataset (phases 1–5 add columns to it)
-git checkout python/data/dataset.csv
+# Delete the dataset (no reviews will show until a new dataset is uploaded)
+Remove-Item -Path "python\data\dataset.csv" -Force -ErrorAction SilentlyContinue
 
 # Delete pipeline-generated data
 Remove-Item -Path "python\data\shared\categorias_scores.json" -Force -ErrorAction SilentlyContinue

@@ -215,7 +215,12 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
         await window.electronAPI.settings.set('llm.apiProvider', 'openai');
         setCurrentStep('models');
       } else {
-        setKeyError(result.error || 'Invalid API key');
+        // Use errorCode for specific, user-friendly messages
+        if (result.errorCode === 'no_credits') {
+          setKeyError(t('openaiSetup.noCredits'));
+        } else {
+          setKeyError(result.error || 'Invalid API key');
+        }
       }
     } catch (error) {
       setKeyError('Failed to validate API key');

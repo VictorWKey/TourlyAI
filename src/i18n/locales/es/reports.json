@@ -28,7 +28,14 @@
     "openDirectory": "Abrir Carpeta",
     "empty": "Aún no hay reportes",
     "emptyDesc": "Los reportes que generes aparecerán aquí. Ve a la pestaña Crear Reporte para construir tu primer reporte.",
-    "open": "Abrir"
+    "open": "Abrir",
+    "deleteDialog": {
+      "title": "Eliminar Reporte",
+      "message": "¿Estás seguro de que deseas eliminar permanentemente este reporte?",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar",
+      "deleting": "Eliminando..."
+    }
   },
   "templates": {
     "title": "Plantilla de Reporte",

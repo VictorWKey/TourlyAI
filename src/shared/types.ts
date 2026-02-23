@@ -356,6 +356,7 @@ export interface ElectronAPI {
     readImageBase64: (filePath: string) => Promise<{ success: boolean; dataUrl?: string; error?: string }>;
     cleanDatasetData: (dataDir: string) => Promise<{ success: boolean; deletedPaths: string[]; error?: string }>;
     backupDatasetData: (dataDir: string) => Promise<{ success: boolean; backupPath?: string; error?: string }>;
+    deleteFile: (filePath: string) => Promise<{ success: boolean; error?: string }>;
   };
   settings: {
     get: <T>(key: string) => Promise<T>;
@@ -404,7 +405,7 @@ export interface ElectronAPI {
     // Prevent deleting the last model
     canDeleteOllamaModel: (model: string) => Promise<{ canDelete: boolean; reason?: string }>;
     getOllamaModelCount: () => Promise<number>;
-    validateOpenAIKey: (key: string) => Promise<{ valid: boolean; error?: string | null }>;
+    validateOpenAIKey: (key: string) => Promise<{ valid: boolean; error?: string | null; errorCode?: string }>;
     checkModels: () => Promise<ModelsStatus>;
     downloadModels: () => Promise<{ success: boolean; error?: string; details?: Record<string, boolean> }>;
     downloadSpecificModel: (modelKey: string) => Promise<boolean>;

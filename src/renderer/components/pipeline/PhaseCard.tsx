@@ -163,7 +163,10 @@ export function PhaseCard({
           {/* Error message */}
           {phase.error && (
             <p className="text-sm text-red-600 dark:text-red-400 mt-2">
-              Error: {phase.error}
+              {phase.error.includes('OPENAI_QUOTA_EXHAUSTED')
+                ? t('phaseCard.quotaError')
+                : `Error: ${phase.error}`
+              }
             </p>
           )}
         </div>

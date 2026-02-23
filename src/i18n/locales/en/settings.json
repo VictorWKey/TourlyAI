@@ -63,6 +63,7 @@
   "apiValidation": {
     "invalidInput": "Please enter a valid API Key.",
     "invalidKey": "The API Key is not valid. Verify that it is correct and has permissions.",
+    "noCredits": "This API key has no available credits. Add funds at platform.openai.com/account/billing before continuing.",
     "connectionError": "Error validating the API Key. Check your internet connection."
   },
   "temperature": {

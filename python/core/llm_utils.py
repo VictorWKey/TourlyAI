@@ -48,6 +48,57 @@ class LLMEmptyResponseError(LLMError):
     pass
 
 
+class LLMQuotaExhaustedError(LLMError):
+    """The OpenAI API key has no available credits/quota."""
+
+    pass
+
+
+def is_openai_quota_error(error: Exception) -> bool:
+    """
+    Check if an exception is an OpenAI insufficient quota / billing error.
+
+    These errors are non-transient and should NOT be retried.
+
+    Args:
+        error: The exception to check
+
+    Returns:
+        True if this is a quota/billing error
+    """
+    error_str = str(error).lower()
+
+    # Check for known quota error patterns from OpenAI API
+    quota_patterns = [
+        'insufficient_quota',
+        'you exceeded your current quota',
+        'billing hard limit has been reached',
+        'account is not active',
+        'exceeded your current quota',
+        'rate_limit_exceeded',  # Sometimes used for billing too
+    ]
+
+    for pattern in quota_patterns:
+        if pattern in error_str:
+            return True
+
+    # Check for openai library specific exception types
+    try:
+        import openai
+
+        if isinstance(error, openai.RateLimitError):
+            # RateLimitError can mean either rate-limited or quota exhausted.
+            # Check the error message to distinguish.
+            if 'insufficient_quota' in error_str or 'exceeded' in error_str:
+                return True
+        if isinstance(error, openai.AuthenticationError):
+            return False  # Auth errors are different
+    except ImportError:
+        pass
+
+    return False
+
+
 def extraer_json_de_respuesta(texto: str) -> str | None:
     """
     Extrae JSON de una respuesta de LLM que puede contener texto adicional.

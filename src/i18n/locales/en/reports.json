@@ -28,7 +28,14 @@
     "openDirectory": "Open Folder",
     "empty": "No reports yet",
     "emptyDesc": "Reports you generate will appear here. Go to the Create Report tab to build your first report.",
-    "open": "Open"
+    "open": "Open",
+    "deleteDialog": {
+      "title": "Delete Report",
+      "message": "Are you sure you want to permanently delete this report?",
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "deleting": "Deleting..."
+    }
   },
   "templates": {
     "title": "Report Template",

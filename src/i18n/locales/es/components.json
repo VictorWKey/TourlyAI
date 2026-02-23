@@ -28,6 +28,7 @@
     "run": "Ejecutar",
     "togglePhase": "Activar o desactivar fase {{phase}}",
     "progress": "Progreso de fase {{phase}}: {{progress}} por ciento",
+    "quotaError": "Tu API key de OpenAI no tiene créditos disponibles. Agrega fondos en platform.openai.com/account/billing o cambia a IA local (Ollama) en Configuración.",
     "status": {
       "running": "En ejecución",
       "completed": "Completada",

@@ -51,6 +51,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     readImageBase64: (filePath: string) => ipcRenderer.invoke('files:read-image-base64', filePath),
     cleanDatasetData: (dataDir: string) => ipcRenderer.invoke('files:clean-dataset-data', dataDir),
     backupDatasetData: (dataDir: string) => ipcRenderer.invoke('files:backup-dataset-data', dataDir),
+    deleteFile: (filePath: string) => ipcRenderer.invoke('files:delete', filePath),
   },
 
   // Settings

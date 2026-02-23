@@ -352,6 +352,8 @@ class GeneradorInsightsEstrategicos:
         self, template: str, input_data: dict, max_retries: int = 3, descripcion: str = 'LLM operation'
     ) -> str:
         """Invoke LLM with retry logic."""
+        from .llm_utils import is_openai_quota_error
+
         config = RetryConfig(max_retries=max_retries)
         last_error = None
 
@@ -366,6 +368,18 @@ class GeneradorInsightsEstrategicos:
                 raise ValueError('Empty LLM response')
 
             except Exception as e:
+                # Don't retry non-transient errors (quota/billing)
+                if is_openai_quota_error(e):
+                    logger.error(
+                        f'OpenAI quota exhausted for {descripcion}. '
+                        'Add funds at https://platform.openai.com/account/billing'
+                    )
+                    raise RuntimeError(
+                        'OPENAI_QUOTA_EXHAUSTED: Tu API key de OpenAI no tiene créditos disponibles. '
+                        'Agrega fondos en https://platform.openai.com/account/billing '
+                        'o cambia al modo de IA local (Ollama) en la configuración.'
+                    ) from e
+
                 last_error = e
                 logger.warning(f'Attempt {attempt + 1}/{max_retries + 1} failed for {descripcion}: {str(e)[:100]}')
                 if attempt < max_retries:

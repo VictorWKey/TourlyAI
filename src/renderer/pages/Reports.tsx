@@ -45,6 +45,7 @@ import {
   X,
   FileSearch,
   RefreshCcw,
+  Trash2,
 } from 'lucide-react';
 import { PageLayout } from '../components/layout';
 import { Button } from '../components/ui';
@@ -284,6 +285,90 @@ function FloatingToast({ type, title, message, filePath, onOpenFile, onOpenFolde
   );
 }
 
+/* ──────────────── Confirm Delete Dialog ──────────────── */
+
+function ConfirmDeleteDialog({
+  reportName,
+  onConfirm,
+  onCancel,
+  isDeleting,
+  t,
+}: {
+  reportName: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  isDeleting: boolean;
+  t: (key: string, opts?: Record<string, unknown>) => string;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={!isDeleting ? onCancel : undefined}
+      />
+      {/* Dialog */}
+      <div className="relative z-10 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl p-6 w-full max-w-md mx-4">
+        {/* Close button */}
+        {!isDeleting && (
+          <button
+            onClick={onCancel}
+            className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+          >
+            <X className="w-4 h-4 text-slate-400" />
+          </button>
+        )}
+
+        {/* Icon */}
+        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 mb-4 mx-auto">
+          <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
+        </div>
+
+        {/* Title */}
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white text-center mb-2">
+          {t('reports:myReports.deleteDialog.title')}
+        </h2>
+
+        {/* Message */}
+        <p className="text-sm text-slate-500 dark:text-slate-400 text-center mb-1">
+          {t('reports:myReports.deleteDialog.message')}
+        </p>
+        <p className="text-sm font-medium text-slate-700 dark:text-slate-300 text-center mb-6 break-all">
+          &ldquo;{reportName}&rdquo;
+        </p>
+
+        {/* Buttons */}
+        <div className="flex gap-3 justify-center">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onCancel}
+            disabled={isDeleting}
+            className="flex-1"
+          >
+            {t('reports:myReports.deleteDialog.cancel')}
+          </Button>
+          <Button
+            size="sm"
+            onClick={onConfirm}
+            disabled={isDeleting}
+            className="flex-1 bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 text-white border-0"
+          >
+            {isDeleting ? (
+              <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+            ) : (
+              <Trash2 className="w-4 h-4 mr-1.5" />
+            )}
+            {isDeleting
+              ? t('reports:myReports.deleteDialog.deleting')
+              : t('reports:myReports.deleteDialog.confirm')}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ──────────────── Report file info ──────────────── */
 
 interface ReportFileInfo {
@@ -298,6 +383,8 @@ interface ReportFileInfo {
 function MyReportsTab({ outputDir, t }: { outputDir: string; t: (key: string, opts?: Record<string, unknown>) => string }) {
   const [reports, setReports] = useState<ReportFileInfo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reportToDelete, setReportToDelete] = useState<ReportFileInfo | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const loadReports = useCallback(async () => {
     setLoading(true);
@@ -355,6 +442,30 @@ function MyReportsTab({ outputDir, t }: { outputDir: string; t: (key: string, op
   const handleOpenFile = useCallback(async (path: string) => {
     await window.electronAPI.files.openPath(path);
   }, []);
+
+  const handleDeleteRequest = useCallback((report: ReportFileInfo) => {
+    setReportToDelete(report);
+  }, []);
+
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!reportToDelete) return;
+    setIsDeleting(true);
+    try {
+      const result = await window.electronAPI.files.deleteFile(reportToDelete.path);
+      if (result.success) {
+        setReports((prev) => prev.filter((r) => r.path !== reportToDelete.path));
+        setReportToDelete(null);
+      }
+    } catch (err) {
+      console.error('[Reports] Failed to delete report:', err);
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [reportToDelete]);
+
+  const handleDeleteCancel = useCallback(() => {
+    if (!isDeleting) setReportToDelete(null);
+  }, [isDeleting]);
 
   const handleOpenFolder = useCallback(async () => {
     if (outputDir) {
@@ -456,13 +567,34 @@ function MyReportsTab({ outputDir, t }: { outputDir: string; t: (key: string, op
               </div>
 
               {/* Actions */}
-              <Button size="sm" onClick={() => handleOpenFile(report.path)} className="shrink-0">
-                <ExternalLink className="w-4 h-4 mr-1.5" />
-                {t('reports:myReports.open')}
-              </Button>
+              <div className="flex items-center gap-2 shrink-0">
+                <Button size="sm" onClick={() => handleOpenFile(report.path)}>
+                  <ExternalLink className="w-4 h-4 mr-1.5" />
+                  {t('reports:myReports.open')}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleDeleteRequest(report)}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 border-red-200 dark:border-red-800"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           ))}
         </div>
+      )}
+
+      {/* Confirm delete dialog */}
+      {reportToDelete && (
+        <ConfirmDeleteDialog
+          reportName={reportToDelete.name}
+          onConfirm={handleDeleteConfirm}
+          onCancel={handleDeleteCancel}
+          isDeleting={isDeleting}
+          t={t}
+        />
       )}
     </div>
   );

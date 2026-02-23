@@ -28,6 +28,7 @@
     "run": "Run",
     "togglePhase": "Enable or disable phase {{phase}}",
     "progress": "Phase {{phase}} progress: {{progress}} percent",
+    "quotaError": "Your OpenAI API key has no available credits. Add funds at platform.openai.com/account/billing or switch to local AI (Ollama) in Settings.",
     "status": {
       "running": "Running",
       "completed": "Completed",

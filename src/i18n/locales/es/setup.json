@@ -176,7 +176,8 @@
   "openaiSetup": {
     "title": "Configura OpenAI",
     "validating": "Validando...",
-    "apiKeyHint": "Obtén tu API key en "
+    "apiKeyHint": "Obtén tu API key en ",
+    "noCredits": "Esta API Key no tiene créditos disponibles. Agrega fondos en platform.openai.com/account/billing antes de continuar."
   },
   "modelDownload": {
     "title": "Descargar Modelos de Análisis",

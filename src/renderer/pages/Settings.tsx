@@ -399,7 +399,12 @@ export function Settings() {
         setLLMConfig({ mode: 'api', apiKey: pendingApiKey.trim() });
         setShowApiKeyDialog(false);
       } else {
-        setApiKeyValidationError(result.error || t('apiValidation.invalidKey'));
+        // Use errorCode for specific, user-friendly messages
+        if (result.errorCode === 'no_credits') {
+          setApiKeyValidationError(t('apiValidation.noCredits'));
+        } else {
+          setApiKeyValidationError(result.error || t('apiValidation.invalidKey'));
+        }
       }
     } catch (error) {
       setApiKeyValidationError(t('apiValidation.connectionError'));
