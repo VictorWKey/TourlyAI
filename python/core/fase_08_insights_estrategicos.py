@@ -369,8 +369,7 @@ class GeneradorInsightsEstrategicos:
                 last_error = e
                 logger.warning(f'Attempt {attempt + 1}/{max_retries + 1} failed for {descripcion}: {str(e)[:100]}')
                 if attempt < max_retries:
-                    delay = config.get_delay(attempt)
-                    time.sleep(delay)
+                    pass  # retry immediately
 
         logger.error(f'All retries exhausted for {descripcion}: {last_error}')
         return ''
@@ -400,12 +399,12 @@ CRITICAL INSTRUCTIONS:
 3. If a metric isn't in the data, DO NOT mention it
 4. Extract actual baseline values from the metrics for KPI recommendations
 
-EXAMPLE OF GOOD DATA-DRIVEN WRITING:
+EXAMPLE OF GOOD DATA-DRIVEN WRITING (these are FICTIONAL examples of STYLE ONLY — do NOT use these numbers, use the ACTUAL metrics above):
 ❌ BAD: "The destination shows positive sentiment"
-✅ GOOD: "67.3% of reviews express positive sentiment (402 of 597 total reviews)"
+✅ GOOD: "[actual_%_positive] of reviews express positive sentiment ([actual_count] of [actual_total] total reviews)"
 
 ❌ BAD: "Food is a competitive advantage"
-✅ GOOD: "Food & Dining leads with 78.4% positive sentiment (156 mentions, avg rating 4.3/5)"
+✅ GOOD: "[Category] leads with [actual_%]% positive sentiment ([actual_mentions] mentions, avg rating [actual_rating]/5)"
 
 Synthesize ALL the above data into a comprehensive STRATEGIC INSIGHTS REPORT (800-1200 words).
 
@@ -494,12 +493,12 @@ INSTRUCCIONES CRÍTICAS:
 3. Si una métrica no está en los datos, NO la menciones
 4. Extrae valores base reales de las métricas para las recomendaciones de KPIs
 
-EJEMPLO DE BUENA ESCRITURA BASADA EN DATOS:
+EJEMPLO DE BUENA ESCRITURA BASADA EN DATOS (estos son ejemplos FICTICIOS solo de ESTILO — NO uses estos números, usa las MÉTRICAS REALES de arriba):
 ❌ MAL: "El destino muestra sentimiento positivo"
-✅ BIEN: "67.3% de las reseñas expresan sentimiento positivo (402 de 597 reseñas totales)"
+✅ BIEN: "[%_real_positivo] de las reseñas expresan sentimiento positivo ([conteo_real] de [total_real] reseñas totales)"
 
 ❌ MAL: "La comida es una ventaja competitiva"
-✅ BIEN: "Gastronomía lidera con 78.4% de sentimiento positivo (156 menciones, calificación promedio 4.3/5)"
+✅ BIEN: "[Categoría] lidera con [%_real]% de sentimiento positivo ([menciones_reales] menciones, calificación promedio [calificación_real]/5)"
 
 Sintetiza TODOS los datos anteriores en un REPORTE DE INSIGHTS ESTRATÉGICOS integral (800-1200 palabras).
 

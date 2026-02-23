@@ -136,6 +136,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     complete: () => ipcRenderer.invoke('setup:complete'),
     reset: () => ipcRenderer.invoke('setup:reset'),
     cleanPython: () => ipcRenderer.invoke('setup:clean-python'),
+    // Validate setup state against actual system state (resets stale flags)
+    validateState: () => ipcRenderer.invoke('setup:validate-state'),
     // Ollama management
     uninstallOllama: () => ipcRenderer.invoke('setup:uninstall-ollama'),
     stopOllama: () => ipcRenderer.invoke('setup:stop-ollama'),

@@ -125,6 +125,141 @@ export class SetupManager {
   }
 
   /**
+   * Validate setup state against actual system state.
+   * Resets flags that don't match reality (e.g., after user closed mid-install).
+   * This prevents the wizard from showing steps as "complete" when they're not.
+   */
+  async validateSetupState(): Promise<void> {
+    const state = this.getSetupState();
+    if (state.isComplete) {
+      // Setup was fully completed — nothing to validate
+      return;
+    }
+
+    const corrections: Partial<SetupState> = {};
+    let hasCorrections = false;
+
+    // 1. Validate Python readiness
+    if (state.pythonReady) {
+      const pythonOk = await this.checkPythonVenv();
+      if (!pythonOk) {
+        corrections.pythonReady = false;
+        hasCorrections = true;
+        console.log('[SetupManager] Corrected pythonReady: true → false (venv not working)');
+      }
+    }
+
+    // 2. Validate Ollama installation
+    if (state.ollamaInstalled) {
+      const installed = await this.quickCheckOllamaInstalled();
+      if (!installed) {
+        corrections.ollamaInstalled = false;
+        corrections.ollamaModelReady = false;
+        hasCorrections = true;
+        console.log('[SetupManager] Corrected ollamaInstalled: true → false (not found)');
+      }
+    }
+
+    // 3. Validate Ollama model readiness
+    if (state.ollamaModelReady && state.ollamaInstalled) {
+      const running = await this.quickCheckOllamaRunning();
+      if (running) {
+        const hasModels = await this.quickCheckOllamaHasModels();
+        if (!hasModels) {
+          corrections.ollamaModelReady = false;
+          hasCorrections = true;
+          console.log('[SetupManager] Corrected ollamaModelReady: true → false (no models)');
+        }
+      } else {
+        // Can't verify models if not running — reset to be safe
+        corrections.ollamaModelReady = false;
+        hasCorrections = true;
+        console.log('[SetupManager] Corrected ollamaModelReady: true → false (service not running)');
+      }
+    }
+
+    // 4. Validate HuggingFace models
+    const modelKeys: (keyof SetupState['modelsDownloaded'])[] = ['sentiment', 'embeddings', 'subjectivity', 'categories'];
+    const modelDir = app.isPackaged
+      ? path.join(process.resourcesPath, 'python', 'models', 'hf_cache')
+      : path.join(app.getAppPath(), 'python', 'models', 'hf_cache');
+
+    for (const key of modelKeys) {
+      if (state.modelsDownloaded[key]) {
+        // Quick check: if model cache dir doesn't exist at all, models can't be downloaded
+        if (!fs.existsSync(modelDir)) {
+          const modelCorrections = { ...state.modelsDownloaded, [key]: false };
+          corrections.modelsDownloaded = modelCorrections;
+          hasCorrections = true;
+          console.log(`[SetupManager] Corrected modelsDownloaded.${key}: true → false (cache dir missing)`);
+        }
+      }
+    }
+
+    if (hasCorrections) {
+      this.updateSetupState(corrections);
+      console.log('[SetupManager] Setup state validated and corrected');
+    } else {
+      console.log('[SetupManager] Setup state validation passed — all flags consistent');
+    }
+  }
+
+  /**
+   * Quick check if Ollama executable exists (no service check)
+   */
+  private async quickCheckOllamaInstalled(): Promise<boolean> {
+    if (process.platform === 'win32') {
+      const ollamaPath = path.join(
+        process.env.LOCALAPPDATA || '',
+        'Programs', 'Ollama', 'ollama.exe'
+      );
+      return fs.existsSync(ollamaPath);
+    }
+    try {
+      await execAsync('which ollama');
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Quick check if Ollama service is running
+   */
+  private async quickCheckOllamaRunning(): Promise<boolean> {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      const response = await fetch('http://localhost:11434/api/tags', {
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      return response.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Quick check if Ollama has at least one model
+   */
+  private async quickCheckOllamaHasModels(): Promise<boolean> {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      const response = await fetch('http://localhost:11434/api/tags', {
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      if (!response.ok) return false;
+      const data = await response.json();
+      return Array.isArray(data.models) && data.models.length > 0;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Run comprehensive system check
    */
   async runSystemCheck(): Promise<SystemCheckResult> {

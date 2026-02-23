@@ -291,15 +291,32 @@ export function registerSetupHandlers(): void {
   ipcMain.handle('setup:complete', async () => {
     setupManager.markSetupComplete();
     
+    // Log the final LLM configuration that will be used
+    const store = getStore();
+    const llmConfig = store.get('llm');
+    console.log('[Setup] Setup complete. Final LLM config:', JSON.stringify(llmConfig, null, 2));
+    
     // Restart Python bridge to ensure it uses the correct venv Python path
-    // This is necessary because the bridge may have been initialized before
-    // the Python environment was fully set up
+    // and the latest LLM settings (model name, mode, etc.)
     try {
       const bridge = getPythonBridge();
       await bridge.restart();
       console.log('[Setup] Python bridge restarted with updated configuration');
     } catch (error) {
       console.error('[Setup] Failed to restart Python bridge:', error);
+    }
+    
+    // Auto-start Ollama if the user chose local LLM
+    if (llmConfig?.mode === 'local') {
+      try {
+        const installed = await ollamaInstaller.isInstalled();
+        if (installed && !(await ollamaInstaller.isRunning())) {
+          await ollamaInstaller.startService();
+          console.log('[Setup] Ollama service started after setup completion');
+        }
+      } catch (err) {
+        console.warn('[Setup] Failed to auto-start Ollama after setup:', err);
+      }
     }
     
     return { success: true };
@@ -358,6 +375,20 @@ export function registerSetupHandlers(): void {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error('[Setup] Failed to preload models:', message);
+      return { success: false, error: message };
+    }
+  });
+
+  // Validate setup state against actual system state
+  // Called on wizard open to reset flags that no longer match reality
+  // (e.g., user closed window mid-installation, deleted files externally)
+  ipcMain.handle('setup:validate-state', async () => {
+    try {
+      await setupManager.validateSetupState();
+      return { success: true, state: setupManager.getSetupState() };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('[Setup] State validation failed:', message);
       return { success: false, error: message };
     }
   });

@@ -330,17 +330,12 @@ def con_reintentos(
                     ultimo_error = e
 
                     if intento < config.max_retries:
-                        delay = config.get_delay(intento)
-
                         if on_retry:
                             on_retry(intento + 1, e)
                         else:
                             logger.warning(
-                                f'Intento {intento + 1}/{config.max_retries + 1} falló: {e}. '
-                                f'Reintentando en {delay:.1f}s...'
+                                f'Intento {intento + 1}/{config.max_retries + 1} falló: {e}. Reintentando...'
                             )
-
-                        time.sleep(delay)
                     else:
                         logger.error(
                             f'Todos los reintentos agotados ({config.max_retries + 1} intentos). Último error: {e}'
@@ -411,11 +406,9 @@ def invocar_llm_con_retry(
             else:
                 logger.warning(f'Error en intento {intento + 1}: {e}')
 
-        # Esperar antes de reintentar
+        # Retry immediately
         if intento < max_retries:
-            delay = config.get_delay(intento)
-            logger.info(f'Reintentando en {delay:.1f}s...')
-            time.sleep(delay)
+            logger.info('Reintentando...')
 
     # Si llegamos aquí, todos los intentos fallaron
     # Intentar usar valores default
@@ -483,10 +476,8 @@ def invocar_llm_con_fallback_manual(
             ultimo_error = e
             logger.warning(f'Error inesperado en intento {intento + 1}: {e}')
 
-        # Esperar antes de reintentar
         if intento < max_retries:
-            delay = config.get_delay(intento)
-            time.sleep(delay)
+            logger.info('Reintentando...')
 
     # Usar valores default si están disponibles
     if valores_default:

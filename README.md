@@ -190,14 +190,20 @@ git checkout python/data/dataset.csv
 # Delete pipeline-generated data
 Remove-Item -Path "python\data\shared\categorias_scores.json" -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "python\data\shared\resumenes.json" -Force -ErrorAction SilentlyContinue
+Remove-Item -Path "python\data\shared\insights_estrategicos.json" -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "python\data\.backups" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "python\data\visualizaciones" -Recurse -Force -ErrorAction SilentlyContinue
 
 # Delete app state (setup wizard, LLM config, pipeline phase state)
+# Production build uses TourlyAI; development build uses TourlyAI-dev
 Remove-Item "$env:APPDATA\TourlyAI\setup-state.json" -Force -ErrorAction SilentlyContinue
 Remove-Item "$env:APPDATA\TourlyAI\tourlyai-config.json" -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "$env:APPDATA\TourlyAI\Local Storage" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "$env:APPDATA\TourlyAI\Session Storage" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item "$env:APPDATA\TourlyAI-dev\setup-state.json" -Force -ErrorAction SilentlyContinue
+Remove-Item "$env:APPDATA\TourlyAI-dev\tourlyai-config.json" -Force -ErrorAction SilentlyContinue
+Remove-Item -Path "$env:APPDATA\TourlyAI-dev\Local Storage" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -Path "$env:APPDATA\TourlyAI-dev\Session Storage" -Recurse -Force -ErrorAction SilentlyContinue
 
 # (Optional) Delete cached HuggingFace models — will re-download on next run (~2.5 GB)
 Remove-Item -Path "python\models\hf_cache" -Recurse -Force -ErrorAction SilentlyContinue

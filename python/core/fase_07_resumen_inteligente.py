@@ -511,8 +511,7 @@ REGLAS DE FORMATO IMPORTANTES:
                 logger.warning(f'Intento {intento + 1}/{max_retries + 1} falló para {descripcion}: {str(e)[:100]}')
 
                 if intento < max_retries:
-                    delay = config.get_delay(intento)
-                    time.sleep(delay)
+                    pass  # retry immediately
 
         logger.error(f'Todos los reintentos fallaron para {descripcion}: {ultimo_error}')
         return ''

@@ -414,6 +414,8 @@ export interface ElectronAPI {
     complete: () => Promise<{ success: boolean }>;
     reset: () => Promise<{ success: boolean }>;
     cleanPython: () => Promise<{ success: boolean; error?: string }>;
+    // Validate setup state against actual system state (resets stale flags)
+    validateState: () => Promise<{ success: boolean; state?: SetupState; error?: string }>;
     // Enhanced hardware detection
     detectHardware: () => Promise<HardwareDetectionResult>;
     saveHardwareOverrides: (overrides: {

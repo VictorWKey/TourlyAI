@@ -11,6 +11,7 @@ import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import i18n from 'i18next';
 
 // Setup wizard
 import { SetupWizard } from './components/setup';
@@ -84,22 +85,45 @@ export function App() {
   const { t } = useTranslation('components');
 
   useEffect(() => {
-    // Check if first run on app start
-    window.electronAPI.setup
-      .isFirstRun()
-      .then((firstRun) => {
+    // Load language from electron-store BEFORE checking first-run status.
+    // This prevents a flash of the wrong language (i18n defaults to 'es',
+    // but the user may have selected 'en' during a previous setup).
+    const initApp = async () => {
+      try {
+        // Load language first so the UI renders in the correct language immediately
+        const storedLang = await window.electronAPI.settings.get('app.language');
+        if (storedLang && typeof storedLang === 'string' && storedLang !== i18n.language) {
+          await i18n.changeLanguage(storedLang);
+        }
+      } catch (err) {
+        console.warn('Failed to load stored language, using default:', err);
+      }
+
+      try {
+        const firstRun = await window.electronAPI.setup.isFirstRun();
+        
+        if (firstRun) {
+          // On first run, validate setup state against actual system state
+          // This catches cases where the user closed the window mid-installation
+          try {
+            await window.electronAPI.setup.validateState();
+          } catch {
+            // validateState may not exist on older builds, ignore
+          }
+        }
+        
         setIsFirstRun(firstRun);
-        // If not first run, setup is already complete
         if (!firstRun) {
           setSetupComplete(true);
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error('Failed to check first run status:', error);
-        // Assume not first run on error
         setIsFirstRun(false);
         setSetupComplete(true);
-      });
+      }
+    };
+
+    initApp();
   }, []);
 
   // Loading state while checking first-run status

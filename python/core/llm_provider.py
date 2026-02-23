@@ -364,9 +364,7 @@ class RobustStructuredChain:
                 logger.warning(f'Intento {intento + 1}/{retries + 1} falló: {str(e)[:100]}...')
 
                 if intento < retries:
-                    delay = self.retry_delay * (2**intento)
-                    logger.info(f'Reintentando en {delay:.1f}s...')
-                    time.sleep(delay)
+                    logger.info('Reintentando...')
 
         # Todos los intentos fallaron - usar default si existe
         if default_value is not None:

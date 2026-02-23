@@ -145,6 +145,11 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
       // Check if the specific model is available
       const hasModel = await window.electronAPI.setup.hasOllamaModel(modelToUse);
       if (hasModel) {
+        // IMPORTANT: Always persist the selected model to config, even when
+        // Ollama already has it. Without this, the config retains the default
+        // 'llama3.2:3b' and the app tries to use a model that was never installed.
+        await window.electronAPI.settings.set('llm.localModel', modelToUse);
+        await window.electronAPI.settings.set('llm.mode', 'local');
         setOllamaProgress({ 
           stage: 'complete', 
           progress: 100, 
@@ -189,6 +194,10 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
         return;
       }
     }
+    
+    // Always ensure the selected model is saved to config after successful setup
+    await window.electronAPI.settings.set('llm.localModel', modelToUse);
+    await window.electronAPI.settings.set('llm.mode', 'local');
   }, [selectedOllamaModel, customOllamaModel, useCustomOllamaModel]);
 
   const handleOpenAISetup = useCallback(async () => {
@@ -202,6 +211,9 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
         const modelToUse = useCustomOpenAIModel ? customOpenAIModel : selectedOpenAIModel;
         await window.electronAPI.settings.set('llm.apiKey', openaiKey);
         await window.electronAPI.settings.set('llm.apiModel', modelToUse);
+        // Ensure LLM mode is set to 'api' so the app uses OpenAI
+        await window.electronAPI.settings.set('llm.mode', 'api');
+        await window.electronAPI.settings.set('llm.apiProvider', 'openai');
         setCurrentStep('models');
       } else {
         setKeyError(result.error || 'Invalid API key');

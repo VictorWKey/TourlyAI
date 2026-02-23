@@ -42,11 +42,13 @@ const defaultPipelineConfig: PipelineConfig = {
 };
 
 // Default app settings
+// IMPORTANT: language defaults to 'es' to match i18n initialization and all
+// fallback values. The user selects their preferred language in the setup wizard.
 const defaultAppSettings: AppSettings = {
   llm: defaultLLMConfig,
   app: {
     theme: 'system',
-    language: 'en',
+    language: 'es',
     outputDir: '',
   },
 };
