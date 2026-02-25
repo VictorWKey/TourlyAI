@@ -64,6 +64,9 @@ export class PythonBridge extends EventEmitter {
   private callId = 0;
   private isReady = false;
   private startPromise: Promise<void> | null = null;
+  // Track the readyTimeout so cleanup() can clear it and prevent stale
+  // timeouts from a previous start() call from interfering with a new one.
+  private readyTimeoutId: ReturnType<typeof setTimeout> | null = null;
   
   // Track current phase for progress parsing
   private currentPhase: number | null = null;
@@ -284,7 +287,8 @@ export class PythonBridge extends EventEmitter {
         });
 
         // Wait for ready signal or timeout
-        const readyTimeout = setTimeout(() => {
+        this.readyTimeoutId = setTimeout(() => {
+          this.readyTimeoutId = null;
           if (!this.isReady) {
             this.isReady = true;
             this.startPromise = null;
@@ -296,7 +300,10 @@ export class PythonBridge extends EventEmitter {
         // Listen for ready signal
         const readyHandler = (response: PythonResponse) => {
           if (response.type === 'ready') {
-            clearTimeout(readyTimeout);
+            if (this.readyTimeoutId) {
+              clearTimeout(this.readyTimeoutId);
+              this.readyTimeoutId = null;
+            }
             this.isReady = true;
             this.startPromise = null;
             this.emit('ready');
@@ -583,6 +590,13 @@ export class PythonBridge extends EventEmitter {
       callback.reject(new Error('Python bridge stopped'));
     }
     this.pendingCallbacks.clear();
+
+    // Clear any pending readyTimeout from a previous start() to prevent
+    // a stale timeout from setting isReady = true on a future start()
+    if (this.readyTimeoutId) {
+      clearTimeout(this.readyTimeoutId);
+      this.readyTimeoutId = null;
+    }
 
     // Kill process if running
     if (this.process) {

@@ -37,7 +37,10 @@ class ConfigLLM:
 
     # Configuración para Local (Ollama)
     OLLAMA_BASE_URL = os.getenv('OLLAMA_BASE_URL', 'http://localhost:11434')
-    OLLAMA_MODEL = os.getenv('OLLAMA_MODEL', 'llama3.2:3b')
+    # No hardcoded fallback — the model MUST come from the Electron config
+    # via the OLLAMA_MODEL env var.  If it is missing the user never finished
+    # the setup wizard or a config-sync bug occurred.
+    OLLAMA_MODEL = os.getenv('OLLAMA_MODEL', '')
 
     # Parámetros compartidos
     LLM_TEMPERATURE = float(os.getenv('LLM_TEMPERATURE', '0'))
@@ -52,8 +55,12 @@ class ConfigLLM:
                     'Agrega tu clave en el archivo .env o como variable de entorno.'
                 )
         elif cls.LLM_MODE == 'local':
-            # Validación de Ollama se hace al intentar conectar
-            pass
+            # Validate that an Ollama model was actually configured
+            if not cls.OLLAMA_MODEL:
+                raise ValueError(
+                    "Modo 'local' seleccionado pero OLLAMA_MODEL no está configurado. "
+                    'Ejecuta el asistente de configuración o establece la variable de entorno OLLAMA_MODEL.'
+                )
         elif cls.LLM_MODE == 'none':
             # No LLM mode - no validation needed
             pass

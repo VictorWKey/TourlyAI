@@ -72,9 +72,32 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
 
   // Listen for progress updates
   useEffect(() => {
-    const handleOllamaProgress = (_: unknown, data: OllamaDownloadProgress) => {
+    const handleOllamaProgress = async (_: unknown, data: OllamaDownloadProgress) => {
       setOllamaProgress(data);
       if (data.stage === 'complete') {
+        // Verify the model is actually registered in Ollama before advancing.
+        // Ollama may report "success" in stdout but the model might not yet be
+        // fully registered (e.g., interrupted download with partial files).
+        try {
+          const modelReady = await window.electronAPI.setup.hasOllamaModel(selectedOllamaModel);
+          if (!modelReady) {
+            console.warn('[Setup] Progress reported complete but model not found, waiting...');
+            // Give Ollama a moment to register the model, then check again
+            await new Promise(r => setTimeout(r, 2000));
+            const retryReady = await window.electronAPI.setup.hasOllamaModel(selectedOllamaModel);
+            if (!retryReady) {
+              setOllamaProgress({
+                stage: 'error',
+                progress: 0,
+                message: 'Model download may have been interrupted',
+                error: `Model ${selectedOllamaModel} is not available. Please retry.`,
+              });
+              return;
+            }
+          }
+        } catch {
+          // If verification fails, still advance (IPC may not be available during shutdown)
+        }
         setTimeout(() => setCurrentStep('output-dir'), 1000);
       }
     };
@@ -84,7 +107,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
     return () => {
       window.electronAPI.setup.offOllamaProgress();
     };
-  }, []);
+  }, [selectedOllamaModel]);
 
   // Navigation handlers
   const goBack = useCallback(() => {
@@ -99,13 +122,16 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
     await window.electronAPI.setup.setLLMProvider(choice);
     // Auto-select the best model for the detected hardware (user can change in Settings later)
     if (choice === 'ollama') {
-      setSelectedOllamaModel(getRecommendedOllamaModel(hardwareConfig));
+      const recommended = getRecommendedOllamaModel(hardwareConfig);
+      setSelectedOllamaModel(recommended);
+      // Pre-save the model choice so the config is never out of sync
+      await window.electronAPI.settings.set('llm.localModel', recommended);
     } else {
       setSelectedOpenAIModel('gpt-5-nano');
     }
     // Skip model selection — go directly to setup
     setCurrentStep('llm-setup');
-  }, []);
+  }, [hardwareConfig]);
 
   // Unified Ollama installation: software + model in one seamless process
   // Installation is NOT complete until a model is successfully installed
@@ -171,6 +197,23 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
       }
     }
     
+    // Verify the model is actually available before saving config
+    try {
+      const modelExists = await window.electronAPI.setup.hasOllamaModel(modelToUse);
+      if (!modelExists) {
+        // Model pull completed but model isn't registered — likely interrupted
+        setOllamaProgress({
+          stage: 'error',
+          progress: 0,
+          message: 'Model download incomplete',
+          error: `The download of ${modelToUse} was interrupted. Please retry.`,
+        });
+        return;
+      }
+    } catch {
+      // Ignore verification errors and save anyway
+    }
+
     // Always ensure the selected model is saved to config after successful setup
     await window.electronAPI.settings.set('llm.localModel', modelToUse);
     await window.electronAPI.settings.set('llm.mode', 'local');
@@ -223,8 +266,13 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
   }, [outputDir, defaultOutputDir]);
 
   const handleComplete = useCallback(async () => {
-    await window.electronAPI.setup.complete();
-    onComplete();
+    try {
+      await window.electronAPI.setup.complete();
+      onComplete();
+    } catch (error) {
+      console.error('[SetupWizard] Setup completion failed:', error);
+      throw error; // Re-throw so CompleteStep can show the error
+    }
   }, [onComplete]);
 
   return (

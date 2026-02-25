@@ -342,19 +342,29 @@ export function registerSetupHandlers(): void {
 
   // Mark setup as complete
   ipcMain.handle('setup:complete', async () => {
-    setupManager.markSetupComplete();
+    const startTime = Date.now();
+    console.log('[Setup] setup:complete handler started');
+    
+    try {
+      setupManager.markSetupComplete();
+      console.log('[Setup] Setup marked as complete');
+    } catch (markError) {
+      console.error('[Setup] Failed to mark setup complete:', markError);
+      // Continue anyway — don't block the user
+    }
     
     // Log the final LLM configuration that will be used
     const store = getStore();
     const llmConfig = store.get('llm');
-    console.log('[Setup] Setup complete. Final LLM config:', JSON.stringify(llmConfig, null, 2));
+    console.log('[Setup] Final LLM config:', JSON.stringify(llmConfig, null, 2));
     
     // Restart Python bridge to ensure it uses the correct venv Python path
     // and the latest LLM settings (model name, mode, etc.)
     try {
+      console.log('[Setup] Restarting Python bridge...');
       const bridge = getPythonBridge();
       await bridge.restart();
-      console.log('[Setup] Python bridge restarted with updated configuration');
+      console.log('[Setup] Python bridge restarted (%dms)', Date.now() - startTime);
     } catch (error) {
       console.error('[Setup] Failed to restart Python bridge:', error);
     }
@@ -362,16 +372,21 @@ export function registerSetupHandlers(): void {
     // Auto-start Ollama if the user chose local LLM
     if (llmConfig?.mode === 'local') {
       try {
+        console.log('[Setup] Checking Ollama for local LLM mode...');
         const installed = await ollamaInstaller.isInstalled();
         if (installed && !(await ollamaInstaller.isRunning())) {
+          console.log('[Setup] Starting Ollama service...');
           await ollamaInstaller.startService();
-          console.log('[Setup] Ollama service started after setup completion');
+          console.log('[Setup] Ollama service started (%dms)', Date.now() - startTime);
+        } else {
+          console.log('[Setup] Ollama already running or not installed');
         }
       } catch (err) {
         console.warn('[Setup] Failed to auto-start Ollama after setup:', err);
       }
     }
     
+    console.log('[Setup] setup:complete handler finished (%dms)', Date.now() - startTime);
     return { success: true };
   });
 

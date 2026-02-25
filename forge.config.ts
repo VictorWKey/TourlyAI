@@ -44,13 +44,12 @@ function cleanPythonResourcesAfterComplete(
     'venv',         // Should never be here, but just in case
   ];
 
-  // File patterns to remove
+  // File patterns to remove (top-level only; README.md handled recursively below)
   const filePatternsToRemove = [
     'requirements-dev.txt',
     'test_bridge.py',
     '.coverage',
     '.mypy_cache',
-    'README.md',
   ];
 
   try {
@@ -70,8 +69,9 @@ function cleanPythonResourcesAfterComplete(
       }
     }
 
-    // Recursively remove __pycache__ directories
-    const removePycache = (dir: string) => {
+    // Recursively remove __pycache__ directories and dev files (e.g. README.md)
+    const devFileNames = new Set(['README.md', 'CHANGELOG.md', 'CONTRIBUTING.md']);
+    const cleanRecursive = (dir: string) => {
       if (!fs.existsSync(dir)) return;
       for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
         const fullPath = path.join(dir, entry.name);
@@ -79,12 +79,15 @@ function cleanPythonResourcesAfterComplete(
           if (entry.name === '__pycache__' || entry.name === '.pytest_cache') {
             fs.rmSync(fullPath, { recursive: true, force: true });
           } else {
-            removePycache(fullPath);
+            cleanRecursive(fullPath);
           }
+        } else if (devFileNames.has(entry.name)) {
+          fs.unlinkSync(fullPath);
+          console.log(`[forge] Removed dev file: ${path.relative(path.join(pythonDir, '..', '..'), fullPath)}`);
         }
       }
     };
-    removePycache(pythonDir);
+    cleanRecursive(pythonDir);
 
     console.log('[forge] Python resources cleaned for production');
     callback();

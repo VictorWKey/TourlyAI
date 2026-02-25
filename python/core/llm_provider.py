@@ -99,6 +99,12 @@ class LLMProvider:
 
     def _inicializar_ollama(self):
         """Inicializa el modelo Ollama local."""
+        if not ConfigLLM.OLLAMA_MODEL:
+            raise RuntimeError(
+                'No se ha configurado un modelo Ollama. '
+                'Ejecuta el asistente de configuración o establece la variable de entorno OLLAMA_MODEL '
+                'con el nombre del modelo instalado (ej: mistral:7b, llama3.1:8b).'
+            )
         try:
             from langchain_ollama import ChatOllama
 

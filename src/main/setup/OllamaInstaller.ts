@@ -416,7 +416,7 @@ export class OllamaInstaller {
    * Uses the CLI for more reliable progress reporting
    */
   async pullModel(
-    modelName = 'llama3.2:3b',
+    modelName: string,
     onProgress: (p: OllamaDownloadProgress) => void
   ): Promise<boolean> {
     try {

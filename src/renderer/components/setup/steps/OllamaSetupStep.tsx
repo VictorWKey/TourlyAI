@@ -196,7 +196,18 @@ export function OllamaSetupStep({
             )}
             
             {progress.error && (
-              <p className="mt-3 text-sm text-red-500 text-center">{progress.error}</p>
+              <div className="mt-3 text-center space-y-3">
+                <p className="text-sm text-red-500">{progress.error}</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onStart}
+                  className="text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                >
+                  <Download className="w-3.5 h-3.5 mr-1.5" />
+                  {t('ollamaSetup.retry', { defaultValue: 'Retry Download' })}
+                </Button>
+              </div>
             )}
           </div>
         </div>

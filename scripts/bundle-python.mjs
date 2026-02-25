@@ -179,10 +179,12 @@ async function main() {
   execSync(`"${pythonExe}" -m venv "${venvDir}"`, { stdio: 'inherit' });
 
   // Step 4: Install dependencies
-  const pipExe = getPipBinary(venvDir);
+  const venvPython = targetPlatform === 'win32'
+    ? join(venvDir, 'Scripts', 'python.exe')
+    : join(venvDir, 'bin', 'python3');
   console.log('\nStep 4: Installing dependencies (this may take 10-20 minutes)...');
-  execSync(`"${pipExe}" install --upgrade pip`, { stdio: 'inherit' });
-  execSync(`"${pipExe}" install -r "${requirementsPath}"`, {
+  execSync(`"${venvPython}" -m pip install --upgrade pip`, { stdio: 'inherit' });
+  execSync(`"${venvPython}" -m pip install -r "${requirementsPath}"`, {
     stdio: 'inherit',
     env: { ...process.env, PIP_DISABLE_PIP_VERSION_CHECK: '1' },
   });
@@ -190,9 +192,6 @@ async function main() {
   // Step 5: Download HuggingFace NLP models into the bundle
   // These 4 models are required for the analysis pipeline (~2.5 GB total)
   const bundledModelsDir = join(pythonDir, 'bundled-models');
-  const venvPythonExe = targetPlatform === 'win32'
-    ? join(venvDir, 'Scripts', 'python.exe')
-    : join(venvDir, 'bin', 'python3');
 
   console.log('\nStep 5: Downloading HuggingFace NLP models (~2.5 GB)...');
   if (existsSync(bundledModelsDir)) {
@@ -207,7 +206,8 @@ async function main() {
     'victorwkey/tourism-categories-bert',
   ];
 
-  // Download each model using transformers/sentence-transformers snapshot_download
+  // Download each model — ignore TF/Flax/ONNX/OpenVINO formats to keep size manageable
+  // Only safetensors (preferred) and pytorch_model.bin (fallback) are needed
   const downloadScript = `
 import os, sys
 os.environ['HF_HOME'] = sys.argv[1]
@@ -215,14 +215,30 @@ os.environ['TRANSFORMERS_CACHE'] = sys.argv[1]
 
 from huggingface_hub import snapshot_download
 
+# Patterns for formats we do NOT need \u2014 keeps only safetensors
+IGNORE = [
+    "*.h5",            # TensorFlow
+    "*.msgpack",       # Flax / JAX
+    "*.onnx",          # ONNX (all variants)
+    "*.ot",            # OpenAI Triton
+    "*.bin",           # pytorch_model.bin (safetensors is preferred)
+    "openvino_*",      # OpenVINO
+    "*openvino*",      # OpenVINO alt naming
+    "onnx/*",          # ONNX subfolder
+    "flax_model*",     # Flax naming
+    "tf_model*",       # TF naming
+    "rust_model*",     # Rust/Candle
+    "coreml/*",        # CoreML
+]
+
 models = ${JSON.stringify(modelsToDownload)}
 for model_id in models:
     print(f'  Downloading {model_id}...')
     try:
-        snapshot_download(repo_id=model_id, cache_dir=sys.argv[1])
-        print(f'  ✓ {model_id} downloaded')
+        snapshot_download(repo_id=model_id, cache_dir=sys.argv[1], ignore_patterns=IGNORE)
+        print(f'  \u2713 {model_id} downloaded')
     except Exception as e:
-        print(f'  ✗ Failed to download {model_id}: {e}')
+        print(f'  \u2717 Failed to download {model_id}: {e}')
         sys.exit(1)
 
 print('All models downloaded successfully.')
@@ -232,7 +248,7 @@ print('All models downloaded successfully.')
   writeFileSync(downloadScriptPath, downloadScript);
 
   try {
-    execSync(`"${venvPythonExe}" "${downloadScriptPath}" "${bundledModelsDir}"`, {
+    execSync(`"${venvPython}" "${downloadScriptPath}" "${bundledModelsDir}"`, {
       stdio: 'inherit',
       env: { ...process.env, HF_HOME: bundledModelsDir, TRANSFORMERS_CACHE: bundledModelsDir },
     });

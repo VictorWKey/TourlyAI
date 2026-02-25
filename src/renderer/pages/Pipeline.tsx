@@ -430,7 +430,7 @@ export function Pipeline() {
   } = usePipeline();
 
   const { dataset } = useDataStore();
-  const { llm } = useSettingsStore();
+  const { llm, setLLMConfig } = useSettingsStore();
   const { models, isRunning: ollamaRunning } = useOllama();
   const { success, warning } = useToast();
   const { t } = useTranslation('pipeline');
@@ -440,7 +440,38 @@ export function Pipeline() {
   const isLocalMode = llm.mode === 'local';
   const isOllamaOffline = isLocalMode && !ollamaRunning;
   const hasNoModels = isLocalMode && ollamaRunning && (!models || models.length === 0);
-  const selectedModelMissing = isLocalMode && ollamaRunning && models && models.length > 0 && !models.find(m => m.name === llm.localModel);
+
+  // Normalize model names for comparison: Ollama may return 'model:tag' or 'model:latest'
+  const normalizeModelName = (name: string): string => name.replace(/:latest$/, '');
+  const selectedModelMissing = isLocalMode && ollamaRunning && models && models.length > 0
+    && (!llm.localModel || !models.find(m => normalizeModelName(m.name) === normalizeModelName(llm.localModel)));
+
+  // Auto-recovery: If the configured model is not installed but other models
+  // ARE available, automatically switch to the first available model.
+  // This prevents phases 6/7/8 from being permanently blocked due to a
+  // setup-time vs runtime model mismatch (e.g. wizard installed mistral:7b
+  // but config still says llama3.2:3b).
+  useEffect(() => {
+    if (
+      isLocalMode &&
+      ollamaRunning &&
+      models &&
+      models.length > 0 &&
+      selectedModelMissing
+    ) {
+      const firstAvailable = models[0].name;
+      console.warn(
+        `[Pipeline] Configured model "${llm.localModel}" not found among installed models. ` +
+        `Auto-switching to "${firstAvailable}".`
+      );
+      // Update both the Zustand store and the persisted electron-store
+      setLLMConfig({ localModel: firstAvailable });
+      window.electronAPI.settings.set('llm.localModel', firstAvailable).catch((err: unknown) => {
+        console.error('[Pipeline] Failed to persist auto-corrected model:', err);
+      });
+    }
+  }, [isLocalMode, ollamaRunning, models, selectedModelMissing, llm.localModel, setLLMConfig]);
+
   const isLocalLLMUnavailable = isOllamaOffline || hasNoModels || !!selectedModelMissing;
 
   const isNoLLMMode = llm.mode === 'none';
@@ -476,7 +507,7 @@ export function Pipeline() {
   };
 
   const getDisabledReason = (phaseNum: number): string | undefined => {
-    if (phaseNum !== 6 && phaseNum !== 7) return undefined;
+    if (phaseNum !== 6 && phaseNum !== 7 && phaseNum !== 8) return undefined;
     if (isNoLLMMode) return t('disabledReason.noLlm');
     if (isOllamaOffline) return t('disabledReason.ollamaOffline');
     if (hasNoModels) return t('disabledReason.noModels');

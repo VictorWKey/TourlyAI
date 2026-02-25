@@ -18,9 +18,12 @@ interface StoreSchema {
 }
 
 // Default LLM configuration
+// localModel is intentionally empty — the actual model is set by the setup
+// wizard (or the user in Settings).  A hardcoded default used to cause a
+// mismatch where the app tried to use a model that was never installed.
 const defaultLLMConfig: LLMConfig = {
   mode: 'local',
-  localModel: 'llama3.2:3b',
+  localModel: '',
   apiProvider: 'openai',
   apiKey: '',
   apiModel: 'gpt-4o-mini',

@@ -62,7 +62,7 @@ export const PIPELINE_PHASES = [
 
 export const DEFAULT_LLM_CONFIG = {
   mode: 'local' as const,
-  localModel: 'llama3.2:3b',
+  localModel: '',
   apiProvider: 'openai' as const,
   apiKey: '',
   apiModel: 'gpt-4o-mini',

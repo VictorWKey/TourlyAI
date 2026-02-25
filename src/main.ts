@@ -268,7 +268,35 @@ async function validateConfiguredModel(): Promise<void> {
         );
         setLLMConfig({ localModel: firstModel });
       } else {
-        console.warn(`[Main] Configured model '${configuredModel}' not found and no models installed`);
+        // No models installed at all — the previous download was likely interrupted.
+        // Attempt to re-pull the configured model in the background.
+        console.warn(
+          `[Main] Configured model '${configuredModel}' not found and no models installed. ` +
+          `Attempting background re-pull...`
+        );
+        try {
+          const pullSuccess = await ollamaInstaller.pullModel(
+            configuredModel,
+            (p) => {
+              if (p.stage === 'error') {
+                console.error(`[Main] Background model re-pull failed: ${p.error}`);
+              } else if (p.stage === 'complete') {
+                console.log(`[Main] Background re-pull of '${configuredModel}' completed`);
+              }
+            }
+          );
+          if (pullSuccess) {
+            console.log(`[Main] Model '${configuredModel}' recovered successfully`);
+            // Notify the renderer to refresh Ollama status
+            if (mainWindow && !mainWindow.isDestroyed()) {
+              mainWindow.webContents.send('ollama:model-recovered', configuredModel);
+            }
+          } else {
+            console.warn(`[Main] Background re-pull of '${configuredModel}' failed`);
+          }
+        } catch (pullError) {
+          console.warn('[Main] Background model re-pull error:', pullError);
+        }
       }
     } else {
       console.log(`[Main] Configured Ollama model '${configuredModel}' is available`);

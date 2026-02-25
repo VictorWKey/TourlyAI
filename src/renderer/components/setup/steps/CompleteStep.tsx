@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { CheckCircle2, Loader2, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Loader2, ArrowRight, AlertCircle } from 'lucide-react';
 import { Button } from '../../ui/button';
 import logoPrimaryHorizontal from '../../../assets/logos/logo-primary-horizontal.png';
 import logoWhiteHorizontal from '../../../assets/logos/logo-white-horizontal.png';
@@ -9,10 +9,18 @@ import logoWhiteHorizontal from '../../../assets/logos/logo-white-horizontal.png
 export function CompleteStep({ onFinish }: { onFinish: () => void }) {
   const { t } = useTranslation('setup');
   const [isFinishing, setIsFinishing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleFinish = async () => {
     setIsFinishing(true);
-    await onFinish();
+    setError(null);
+    try {
+      await onFinish();
+    } catch (err) {
+      console.error('[CompleteStep] Error finishing setup:', err);
+      setError(err instanceof Error ? err.message : String(err));
+      setIsFinishing(false);
+    }
   };
 
   return (
@@ -88,6 +96,13 @@ export function CompleteStep({ onFinish }: { onFinish: () => void }) {
             </>
           )}
         </Button>
+
+        {error && (
+          <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300 max-w-md mx-auto flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
       </motion.div>
     </motion.div>
   );

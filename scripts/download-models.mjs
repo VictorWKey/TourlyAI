@@ -99,14 +99,30 @@ os.environ['TRANSFORMERS_CACHE'] = sys.argv[1]
 
 from huggingface_hub import snapshot_download
 
+# Patterns for formats we do NOT need \u2014 keeps only safetensors
+IGNORE = [
+    "*.h5",            # TensorFlow
+    "*.msgpack",       # Flax / JAX
+    "*.onnx",          # ONNX (all variants)
+    "*.ot",            # OpenAI Triton
+    "*.bin",           # pytorch_model.bin (safetensors is preferred)
+    "openvino_*",      # OpenVINO
+    "*openvino*",      # OpenVINO alt naming
+    "onnx/*",          # ONNX subfolder
+    "flax_model*",     # Flax naming
+    "tf_model*",       # TF naming
+    "rust_model*",     # Rust/Candle
+    "coreml/*",        # CoreML
+]
+
 models = ${JSON.stringify(MODELS)}
 for i, model_id in enumerate(models, 1):
     print(f'  [{i}/${MODELS.length}] Downloading {model_id}...')
     try:
-        snapshot_download(repo_id=model_id, cache_dir=sys.argv[1])
-        print(f'  ✓ {model_id}')
+        snapshot_download(repo_id=model_id, cache_dir=sys.argv[1], ignore_patterns=IGNORE)
+        print(f'  \u2713 {model_id}')
     except Exception as e:
-        print(f'  ✗ Failed: {model_id}: {e}')
+        print(f'  \u2717 Failed: {model_id}: {e}')
         sys.exit(1)
 
 print('\\nAll models downloaded successfully.')

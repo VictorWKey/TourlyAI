@@ -182,7 +182,9 @@ Stop-Process -Name "ollama*" -Force -ErrorAction SilentlyContinue
 Start-Sleep -Seconds 2
 
 # Delete Python virtual environment (forces reinstall on next run)
-Remove-Item -Recurse -Force "python\venv" -ErrorAction SilentlyContinue
+# The venv lives in %APPDATA%\TourlyAI\python-env\ (not inside the project directory)
+Remove-Item -Recurse -Force "$env:APPDATA\TourlyAI\python-env" -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "$env:APPDATA\TourlyAI-dev\python-env" -ErrorAction SilentlyContinue
 
 # Delete the dataset (no reviews will show until a new dataset is uploaded)
 Remove-Item -Path "python\data\dataset.csv" -Force -ErrorAction SilentlyContinue
