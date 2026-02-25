@@ -11,7 +11,6 @@ Utilidades robustas para trabajar con LLMs incluyendo:
 import json
 import logging
 import re
-import time
 from collections.abc import Callable
 from functools import wraps
 from typing import Any, TypeVar
@@ -421,7 +420,7 @@ def invocar_llm_con_retry(
     Returns:
         Resultado del chain o modelo parseado
     """
-    config = RetryConfig(max_retries=max_retries)
+    _config = RetryConfig(max_retries=max_retries)
     ultimo_error = None
 
     for intento in range(max_retries + 1):
@@ -494,7 +493,7 @@ def invocar_llm_con_fallback_manual(
     Returns:
         Instancia del modelo Pydantic
     """
-    config = RetryConfig(max_retries=max_retries)
+    _config = RetryConfig(max_retries=max_retries)
     ultimo_error = None
 
     for intento in range(max_retries + 1):

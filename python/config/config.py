@@ -142,9 +142,7 @@ class ConfigDataset:
     _output_dir = os.getenv('OUTPUT_DIR', '')
     _data_dir_env = os.getenv('DATA_DIR', '')
     DATA_DIR = (
-        Path(_data_dir_env) if _data_dir_env
-        else Path(_output_dir) / 'data' if _output_dir
-        else PRODUCTION_DIR / 'data'
+        Path(_data_dir_env) if _data_dir_env else Path(_output_dir) / 'data' if _output_dir else PRODUCTION_DIR / 'data'
     )
 
     # Archivos principales

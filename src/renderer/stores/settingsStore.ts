@@ -32,7 +32,7 @@ interface SettingsState {
 
 const defaultLLMConfig: LLMConfig = {
   mode: 'local',
-  localModel: '',
+  localModel: 'llama3.2:3b',
   apiProvider: 'openai',
   apiKey: undefined,
   apiModel: 'gpt-4o-mini',

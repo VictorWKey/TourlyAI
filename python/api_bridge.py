@@ -854,8 +854,14 @@ class PipelineAPI:
                 return {'success': True, **info}
             # Return basic info from config
             from config.config import ConfigLLM
+
             model = getattr(ConfigLLM, 'OLLAMA_MODEL', '') or 'unknown'
-            return {'success': True, 'provider': 'ollama', 'model': model, 'configured': bool(model and model != 'unknown')}
+            return {
+                'success': True,
+                'provider': 'ollama',
+                'model': model,
+                'configured': bool(model and model != 'unknown'),
+            }
         except Exception as e:
             return {'success': False, 'error': str(e)}
 

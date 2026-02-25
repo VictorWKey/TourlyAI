@@ -354,7 +354,7 @@ class GeneradorInsightsEstrategicos:
         """Invoke LLM with retry logic."""
         from .llm_utils import is_openai_quota_error
 
-        config = RetryConfig(max_retries=max_retries)
+        _config = RetryConfig(max_retries=max_retries)
         last_error = None
 
         for attempt in range(max_retries + 1):

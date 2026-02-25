@@ -59,6 +59,7 @@ class TestConfigLLM:
 
     def test_validate_local_mode(self, monkeypatch):
         monkeypatch.setattr(ConfigLLM, 'LLM_MODE', 'local')
+        monkeypatch.setattr(ConfigLLM, 'OLLAMA_MODEL', 'llama3.2:3b')
         # Should not raise
         ConfigLLM.validar_configuracion()
 

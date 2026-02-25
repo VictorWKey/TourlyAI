@@ -8,7 +8,6 @@ y usando LLM para crear insights profesionales para turismólogos.
 import json
 import logging
 import os
-import time
 import warnings
 from collections import defaultdict
 from datetime import datetime
@@ -495,7 +494,7 @@ REGLAS DE FORMATO IMPORTANTES:
         """
         from .llm_utils import is_openai_quota_error
 
-        config = RetryConfig(max_retries=max_retries)
+        _config = RetryConfig(max_retries=max_retries)
         ultimo_error = None
 
         for intento in range(max_retries + 1):

@@ -343,9 +343,13 @@ class RobustStructuredChain:
         Returns:
             Instancia del modelo Pydantic
         """
-        import time
 
-        from .llm_utils import LLMQuotaExhaustedError, LLMRetryExhaustedError, is_openai_quota_error, parsear_pydantic_seguro
+        from .llm_utils import (
+            LLMQuotaExhaustedError,
+            LLMRetryExhaustedError,
+            is_openai_quota_error,
+            parsear_pydantic_seguro,
+        )
 
         retries = max_retries if max_retries is not None else self.max_retries
         ultimo_error = None

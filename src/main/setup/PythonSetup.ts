@@ -9,7 +9,7 @@
  * - Automatic setup on first run
  */
 
-import { spawn, exec } from 'child_process';
+import { spawn, exec, execSync } from 'child_process';
 import { app } from 'electron';
 import path from 'path';
 import fs from 'fs';
@@ -378,7 +378,7 @@ export class PythonSetup {
       // On Windows, use the drive letter of the userData path.
       if (this.isWindows) {
         const drive = targetDir.slice(0, 3); // e.g. "C:\\"
-        const result = require('child_process').execSync(
+        const result = execSync(
           `powershell -Command "(Get-PSDrive -Name '${drive[0]}').Free"`,
           { timeout: 10000 }
         );
@@ -386,7 +386,7 @@ export class PythonSetup {
         return isNaN(bytes) ? -1 : bytes;
       } else {
         // Unix: use statvfs via df
-        const result = require('child_process').execSync(
+        const result = execSync(
           `df -k "${targetDir}" | tail -1 | awk '{print $4}'`,
           { timeout: 10000 }
         );

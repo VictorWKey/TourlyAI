@@ -53,9 +53,9 @@ describe('Sidebar', () => {
 
   it('renders all navigation links', () => {
     renderSidebar();
-    // 10 nav items
+    // 11 nav items
     const links = screen.getAllByRole('link');
-    expect(links.length).toBe(10);
+    expect(links.length).toBe(11);
   });
 
   it('renders nav links with correct paths', () => {

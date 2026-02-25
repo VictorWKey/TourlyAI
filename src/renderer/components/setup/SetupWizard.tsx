@@ -158,6 +158,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
           currentPhase: 'model'
         });
         // Silently copy bundled models to userData
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         window.electronAPI.setup.checkModels().catch(() => {});
         setTimeout(() => setCurrentStep('output-dir'), 500);
         return;
