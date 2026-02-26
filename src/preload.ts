@@ -1,8 +1,36 @@
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer, webUtils } from 'electron';
 import type { PipelineProgress } from './shared/types';
+
+// ---------------------------------------------------------------------------
+// Drag-and-drop: capture file paths in the preload's isolated context.
+// With sandbox: true + contextIsolation: true, File objects lose their
+// internal Chromium blob reference when crossing the contextBridge, so
+// webUtils.getPathForFile() must be called HERE, not in the renderer.
+// We use the CAPTURE phase so this runs before any renderer handler.
+// ---------------------------------------------------------------------------
+let _lastDroppedFilePaths: string[] = [];
+
+document.addEventListener('dragover', (e) => {
+  e.preventDefault();
+}, true);
+
+document.addEventListener('drop', (e) => {
+  e.preventDefault();
+  _lastDroppedFilePaths = [];
+  const files = e.dataTransfer?.files;
+  if (files && files.length > 0) {
+    for (let i = 0; i < files.length; i++) {
+      try {
+        _lastDroppedFilePaths.push(webUtils.getPathForFile(files[i]));
+      } catch {
+        // Ignore files whose path cannot be resolved
+      }
+    }
+  }
+}, true);
 
 // Expose protected methods to renderer process
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -29,6 +57,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     offProgress: () => {
       ipcRenderer.removeAllListeners('pipeline:progress');
     },
+  },
+
+  // Utilities
+  utils: {
+    /** Return the real file-system paths captured during the last drop event. */
+    getDroppedFilePaths: (): string[] => [..._lastDroppedFilePaths],
   },
 
   // File operations

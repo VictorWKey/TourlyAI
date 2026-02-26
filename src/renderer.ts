@@ -36,6 +36,10 @@ import { initSentryRenderer, SentryErrorBoundary } from './renderer/lib/sentry';
 // Initialize Sentry error reporting in renderer
 initSentryRenderer();
 
+// NOTE: Global dragover/drop prevention is handled in the preload script
+// (capture phase) so that webUtils.getPathForFile() can extract real file
+// paths before any renderer handler fires.
+
 console.log(
   '👋 TourlyAI - Desktop App Initializing...',
 );

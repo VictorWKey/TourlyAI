@@ -81,11 +81,39 @@ export function Data() {
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
-      // Note: In Electron, we can't get the actual file path from dropped files
-      // The dropzone is used only for UI feedback, actual file selection happens via dialog
-      // Do nothing here - file selection is handled by handleSelectFile
+      if (acceptedFiles.length === 0) return;
+
+      // With sandbox + contextIsolation, File objects lose their internal
+      // path reference when crossing the contextBridge. The preload's
+      // capture-phase drop handler already extracted the real paths via
+      // webUtils.getPathForFile() — retrieve them here.
+      const droppedPaths = window.electronAPI.utils.getDroppedFilePaths();
+      const filePath = droppedPaths[0];
+      if (!filePath) return;
+
+      setError(null);
+      setValidating(true);
+      setShowMapping(false);
+
+      try {
+        const validation = await window.electronAPI.pipeline.validateDataset(filePath);
+
+        if (validation.columns && validation.columns.length > 0) {
+          setPendingFilePath(filePath);
+          setPendingValidation(validation);
+          setPreviewData(validation.preview || null);
+          setShowMapping(true);
+        } else {
+          setValidationResult(validation);
+          setError(validation.error || t('errors.noValidColumns'));
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : t('errors.loadError'));
+      } finally {
+        setValidating(false);
+      }
     },
-    []
+    [t, setError, setValidating, setShowMapping, setPendingFilePath, setPendingValidation, setPreviewData, setValidationResult]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

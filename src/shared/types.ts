@@ -314,6 +314,10 @@ export interface ElectronAPI {
     onProgress: (callback: (event: unknown, data: PipelineProgress) => void) => void;
     offProgress: () => void;
   };
+  utils: {
+    /** Return the real file-system paths captured during the last drop event. */
+    getDroppedFilePaths: () => string[];
+  };
   files: {
     selectFile: (filters?: object) => Promise<string | null>;
     selectDirectory: () => Promise<string | null>;
